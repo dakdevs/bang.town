@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect, useMemo, Suspense } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Toaster, toast } from "sonner"
-import { ImportBangModal } from "../components/ImportBangModal"
+import { ImportBangModal, ConfirmDialog } from "../components/ImportBangModal"
 
 const defaultBangs: Record<string, string> = {
   g: "www.google.com/search?q=",
@@ -40,6 +40,7 @@ function decodeBangCode(code: string) {
 
 function HomeContent() {
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const [newBangKey, setNewBangKey] = useState("")
   const [newBangUrl, setNewBangUrl] = useState("")
@@ -47,6 +48,31 @@ function HomeContent() {
   const [shareUrl, setShareUrl] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{ key: string } | null>(null)
+  const [initialBangs, setInitialBangs] = useState<Set<string>>(new Set())
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+
+  // Track initial bangs on first load
+  useEffect(() => {
+    const currentBangs = new Set(Array.from(searchParams.entries())
+      .filter(([key]) => key !== "q")
+      .map(([key]) => key))
+    setInitialBangs(currentBangs)
+  }, []) // Empty dependency array means this only runs once on mount
+
+  // Check for changes
+  useEffect(() => {
+    const currentBangs = new Set(Array.from(searchParams.entries())
+      .filter(([key]) => key !== "q")
+      .map(([key]) => key))
+
+    // Check if any bangs were added or removed
+    const hasChanges = currentBangs.size !== initialBangs.size ||
+      Array.from(currentBangs).some(bang => !initialBangs.has(bang)) ||
+      Array.from(initialBangs).some(bang => !currentBangs.has(bang))
+
+    setHasUnsavedChanges(hasChanges)
+  }, [searchParams, initialBangs])
 
   useEffect(() => {
     const currentUrl = window.location.origin
@@ -111,31 +137,32 @@ function HomeContent() {
   }
 
   const handleDeleteBang = (key: string) => {
+    setDeleteConfirmation({ key })
+  }
+
+  const confirmDelete = () => {
+    if (!deleteConfirmation) return
+
     const updatedSearchParams = new URLSearchParams(searchParams.toString())
-    updatedSearchParams.delete(key)
+    updatedSearchParams.delete(deleteConfirmation.key)
     router.push(`/?${updatedSearchParams.toString()}`)
+    setDeleteConfirmation(null)
   }
 
   const handleShare = async () => {
     try {
-      if (navigator.share) {
-        await navigator.share({
-          title: "Bang Town Custom Bangs",
-          text: "Check out my custom search bangs!",
-          url: shareUrl
-        })
-      } else {
-        await navigator.clipboard.writeText(shareUrl)
-        toast.success("Share URL copied to clipboard!", {
+      await navigator.clipboard.writeText(shareUrl)
+      toast.success(
+        "Settings URL copied!",
+        {
+          description: "Share this URL with others to let them import all your custom bangs at once.",
           className: "bg-green-500 text-white border-green-600"
-        })
-      }
+        }
+      )
     } catch (error) {
-      if (error instanceof Error && error.name !== "AbortError") {
-        toast.error("Failed to share URL", {
-          className: "bg-red-500 text-white border-red-600"
-        })
-      }
+      toast.error("Failed to copy URL", {
+        className: "bg-red-500 text-white border-red-600"
+      })
     }
   }
 
@@ -258,6 +285,19 @@ function HomeContent() {
             Import Bang
           </button>
         </div>
+        {hasUnsavedChanges && (
+          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-start gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <div>
+                <p className="font-medium text-yellow-800">Unsaved Changes</p>
+                <p className="text-yellow-700 text-sm">Please update your search settings in your browser before leaving this page to ensure your changes are saved.</p>
+              </div>
+            </div>
+          </div>
+        )}
         {customBangs.length > 0 ? (
           <>
             {customBangs.length > 10 && (
@@ -290,27 +330,39 @@ function HomeContent() {
               </div>
             )}
             <ul className="space-y-2">
-              {filteredBangs.map(({ key, url }) => (
-                <li key={key} className="flex justify-between items-center bg-gray-50 p-2 rounded">
-                  <span>
-                    <strong className="text-blue-500">!{key}:</strong> https://{url}
-                  </span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleShareBang(key, url)}
-                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-                    >
-                      Share
-                    </button>
-                    <button
-                      onClick={() => handleDeleteBang(key)}
-                      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </li>
-              ))}
+              {filteredBangs
+                .sort((a, b) => {
+                  const aIsNew = !initialBangs.has(a.key)
+                  const bIsNew = !initialBangs.has(b.key)
+                  if (aIsNew && !bIsNew) return -1
+                  if (!aIsNew && bIsNew) return 1
+                  return 0
+                })
+                .map(({ key, url }) => {
+                  const isNew = !initialBangs.has(key)
+                  return (
+                    <li key={key} className={`flex justify-between items-center p-2 rounded ${isNew ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'}`}>
+                      <span>
+                        <strong className="text-blue-500">!{key}:</strong> https://{url}
+                        {isNew && <span className="ml-2 text-blue-600 text-sm">(New)</span>}
+                      </span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleShareBang(key, url)}
+                          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                        >
+                          Share
+                        </button>
+                        <button
+                          onClick={() => handleDeleteBang(key)}
+                          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  )
+                })}
             </ul>
           </>
         ) : (
@@ -369,6 +421,15 @@ function HomeContent() {
           }}
         />
       )}
+
+      {deleteConfirmation && (
+        <ConfirmDialog
+          title="Delete Bang"
+          message={`Are you sure you want to delete the !${deleteConfirmation.key} bang? This action cannot be undone.`}
+          onClose={() => setDeleteConfirmation(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
     </div>
   )
 }
@@ -380,4 +441,5 @@ export default function Home() {
     </Suspense>
   )
 }
+
 
