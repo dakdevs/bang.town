@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo, Suspense } from "react"
+import { useState, useEffect, useMemo, Suspense, useRef } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Toaster, toast } from "sonner"
 import { ImportBangModal, ConfirmDialog } from "../components/ImportBangModal"
@@ -52,6 +52,14 @@ function HomeContent() {
   const [initialBangs, setInitialBangs] = useState<Set<string>>(new Set())
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
+  // Ref to store current values for keyboard shortcuts
+  const currentValuesRef = useRef({
+    newBangKey,
+    newBangUrl,
+    fullUrl,
+    customBangsLength: 0
+  })
+
   // Track initial bangs on first load
   useEffect(() => {
     const currentBangs = new Set(Array.from(searchParams.entries())
@@ -87,6 +95,65 @@ function HomeContent() {
     })
     setShareUrl(`${currentUrl}/b/?${customBangs.toString()}&q=!settings`)
   }, [searchParams])
+
+  // Get custom bangs
+  const customBangs = useMemo(() => {
+    return Array.from(searchParams.entries())
+      .filter(([key]) => key !== "q")
+      .map(([key, url]) => ({ key, url }))
+  }, [searchParams])
+
+  // Update ref when values change
+  useEffect(() => {
+    currentValuesRef.current = {
+      newBangKey,
+      newBangUrl,
+      fullUrl,
+      customBangsLength: customBangs.length
+    }
+  }, [newBangKey, newBangUrl, fullUrl, customBangs])
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const current = currentValuesRef.current
+
+      // Ctrl/Cmd + Enter to add bang
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && current.newBangKey && current.newBangUrl) {
+        e.preventDefault()
+        handleAddBang()
+      }
+
+      // Ctrl/Cmd + C when URL input is focused to copy
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c' && document.activeElement?.id === 'custom-search-url') {
+        e.preventDefault()
+        navigator.clipboard.writeText(current.fullUrl)
+        toast.success(
+          "URL copied!",
+          {
+            description: "Your custom search URL has been copied to your clipboard.",
+            className: "bg-green-500 text-white border-green-600"
+          }
+        )
+      }
+
+      // Ctrl/Cmd + F to focus search
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f' && current.customBangsLength > 10) {
+        e.preventDefault()
+        document.getElementById('search-bangs-input')?.focus()
+      }
+
+      // Escape to clear search and blur input
+      if (e.key === 'Escape' && document.activeElement?.id === 'search-bangs-input') {
+        e.preventDefault()
+        setSearchQuery('')
+          ; (document.activeElement as HTMLElement).blur()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [setSearchQuery])
 
   const handleAddBang = () => {
     if (newBangKey && newBangUrl) {
@@ -178,13 +245,6 @@ function HomeContent() {
     )
   }
 
-  // Get custom bangs
-  const customBangs = useMemo(() => {
-    return Array.from(searchParams.entries())
-      .filter(([key]) => key !== "q")
-      .map(([key, url]) => ({ key, url }))
-  }, [searchParams])
-
   // Filter bangs based on search query
   const filteredBangs = useMemo(() => {
     if (!searchQuery) return customBangs
@@ -203,6 +263,7 @@ function HomeContent() {
         <h2 className="text-2xl mb-4 text-blue-500">Your Custom Search URL</h2>
         <div className="flex items-center gap-2">
           <input
+            id="custom-search-url"
             type="text"
             value={fullUrl}
             readOnly
@@ -253,11 +314,19 @@ function HomeContent() {
               onChange={(e) => setNewBangKey(e.target.value)}
               placeholder="Bang key (e.g., g)"
               className="border border-gray-300 p-2 pl-6 rounded w-full"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  document.getElementById('bang-url-input')?.focus()
+                }
+              }}
             />
           </div>
           <div className="relative flex-grow">
             <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500">https://</span>
             <input
+              id="bang-url-input"
               type="text"
               value={newBangUrl}
               onChange={(e) => setNewBangUrl(e.target.value.replace(/^(https?:\/\/)/, ""))}
@@ -265,6 +334,12 @@ function HomeContent() {
                 e.preventDefault()
                 const pastedText = e.clipboardData.getData("text")
                 setNewBangUrl(pastedText.replace(/^(https?:\/\/)/, ""))
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  handleAddBang()
+                }
               }}
               placeholder="URL (e.g., www.google.com/search?q=%s)"
               className="border border-gray-300 p-2 pl-16 rounded w-full"
@@ -326,6 +401,7 @@ function HomeContent() {
                     <path d="m21 21-4.3-4.3" />
                   </svg>
                   <input
+                    id="search-bangs-input"
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
