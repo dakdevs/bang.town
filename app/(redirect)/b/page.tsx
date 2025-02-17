@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
+import { track } from "@vercel/analytics"
 
 // This makes the page client-side only rendered
 export const dynamic = "force-dynamic"
@@ -63,14 +64,31 @@ export default function BangRedirect() {
         if (!bangUrl.startsWith("http")) {
           bangUrl = `https://${bangUrl}`
         }
-        window.location.href = `${bangUrl}${encodeURIComponent(searchTerms.join(" ")).replace(/%20/g, "+")}`
+        const finalUrl = `${bangUrl}${encodeURIComponent(searchTerms.join(" ")).replace(/%20/g, "+")}`
+        track("bang_redirect", {
+          bang: bangKey,
+          template: bangUrl,
+          hasSearchTerms: searchTerms.length > 0
+        })
+        window.location.href = finalUrl
       } else {
         // If not found in custom or default bangs, use DuckDuckGo's bang
-        window.location.href = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`
+        const ddgUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`
+        track("bang_redirect", {
+          bang: bangKey,
+          template: "duckduckgo.com/?q=",
+          type: "duckduckgo_fallback"
+        })
+        window.location.href = ddgUrl
       }
     } else {
       // If no bang is detected, use DuckDuckGo as the default search engine
-      window.location.href = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`
+      const ddgUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`
+      track("bang_redirect", {
+        template: "duckduckgo.com/?q=",
+        type: "default_search"
+      })
+      window.location.href = ddgUrl
     }
   }, [isMounted, searchParams])
 
