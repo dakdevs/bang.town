@@ -8,8 +8,8 @@ import { ImportBangModal, ConfirmDialog } from "../components/ImportBangModal"
 const defaultBangs: Record<string, string> = {
   g: "www.google.com/search?q=",
   w: "en.wikipedia.org/w/index.php?search=",
-  c: "chatgpt.com?q=",
-  "4o": "chatgpt.com?model=gpt-4o&q=",
+  c: "chat.openai.com/?q=",
+  "4o": "chat.openai.com/?model=gpt-4&q=",
   yt: "www.youtube.com/results?search_query=",
   gh: "github.com/search?q=",
   so: "stackoverflow.com/search?q=",

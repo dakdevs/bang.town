@@ -9,8 +9,10 @@ export const runtime = "edge"
 
 const defaultBangs: Record<string, string> = {
   g: "www.google.com/search?q=",
-  yt: "www.youtube.com/results?search_query=",
   w: "en.wikipedia.org/w/index.php?search=",
+  c: "chat.openai.com/?q=",
+  "4o": "chat.openai.com/?model=gpt-4&q=",
+  yt: "www.youtube.com/results?search_query=",
   gh: "github.com/search?q=",
   so: "stackoverflow.com/search?q=",
   a: "www.amazon.com/s?k=",
@@ -18,6 +20,7 @@ const defaultBangs: Record<string, string> = {
   x: "x.com/search?q=",
   imdb: "www.imdb.com/find?q=",
   map: "www.google.com/maps?q=",
+  t3: "www.t3.chat/new?q=",
 }
 
 export default function BangRedirect() {
