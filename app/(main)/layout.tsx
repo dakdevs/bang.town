@@ -15,7 +15,7 @@ export default function MainLayout({
   const isHomePage = pathname === "/"
 
   return (
-    <div className={`${bangers.variable} min-h-screen p-4 flex flex-col items-center gap-8 bg-gray-100`}>
+    <div className={`${bangers.variable} min-h-screen p-4 flex flex-col items-center gap-8 bg-gray-100 rounded-lg`}>
       <div className={`bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl ${isHomePage ? bangers.className : ''}`}>
         <a href="/" className="block hover:opacity-80 transition-opacity">
           <h1 className="text-4xl mb-2 text-center text-blue-600 bangers">bang.town</h1>

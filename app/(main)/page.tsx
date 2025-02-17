@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Toaster, toast } from "sonner"
+import { ImportBangModal } from "../components/ImportBangModal"
 
 const defaultBangs: Record<string, string> = {
   g: "www.google.com/search?q=",
@@ -20,6 +21,23 @@ const defaultBangs: Record<string, string> = {
   t3: "www.t3.chat/new?q=",
 }
 
+function generateBangCode(key: string, url: string) {
+  const bangConfig = { key, url }
+  return btoa(JSON.stringify(bangConfig))
+}
+
+function decodeBangCode(code: string) {
+  try {
+    const bangConfig = JSON.parse(atob(code))
+    if (!bangConfig.key || !bangConfig.url) {
+      throw new Error('Invalid bang configuration')
+    }
+    return bangConfig
+  } catch (error) {
+    return null
+  }
+}
+
 function HomeContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -28,6 +46,7 @@ function HomeContent() {
   const [fullUrl, setFullUrl] = useState("")
   const [shareUrl, setShareUrl] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
 
   useEffect(() => {
     const currentUrl = window.location.origin
@@ -118,6 +137,18 @@ function HomeContent() {
         })
       }
     }
+  }
+
+  const handleShareBang = (key: string, url: string) => {
+    const code = generateBangCode(key, url)
+    navigator.clipboard.writeText(code)
+    toast.success(
+      "Bang code copied!",
+      {
+        description: "Share this code with others so they can import your bang configuration.",
+        className: "bg-green-500 text-white border-green-600"
+      }
+    )
   }
 
   // Get custom bangs
@@ -213,7 +244,20 @@ function HomeContent() {
       </div>
 
       <div className="mb-6">
-        <h2 className="text-2xl mb-4 text-blue-500">Custom Bangs</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl text-blue-500">Custom Bangs</h2>
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors flex items-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            Import Bang
+          </button>
+        </div>
         {customBangs.length > 0 ? (
           <>
             {customBangs.length > 10 && (
@@ -251,12 +295,20 @@ function HomeContent() {
                   <span>
                     <strong className="text-blue-500">!{key}:</strong> https://{url}
                   </span>
-                  <button
-                    onClick={() => handleDeleteBang(key)}
-                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
-                  >
-                    Delete
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleShareBang(key, url)}
+                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                    >
+                      Share
+                    </button>
+                    <button
+                      onClick={() => handleDeleteBang(key)}
+                      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -283,6 +335,40 @@ function HomeContent() {
           })}
         </ul>
       </div>
+
+      {isImportModalOpen && (
+        <ImportBangModal
+          onClose={() => setIsImportModalOpen(false)}
+          onImport={(key: string, url: string) => {
+            // Check for existing bang
+            if (searchParams.has(key) || defaultBangs[key]) {
+              toast.error(
+                `The bang !${key} already exists!`,
+                {
+                  description: defaultBangs[key]
+                    ? "This is a default bang - try a different key."
+                    : "You already have a custom bang with this key.",
+                  className: "bg-red-500 text-white border-red-600"
+                }
+              )
+              return
+            }
+
+            const updatedSearchParams = new URLSearchParams(searchParams.toString())
+            updatedSearchParams.set(key, url)
+            router.push(`/?${updatedSearchParams.toString()}`)
+
+            toast.success(
+              `Imported !${key} bang!`,
+              {
+                description: `You can now use !${key} to search ${new URL(`https://${url}`).hostname} 🎉`,
+                className: "bg-green-500 text-white border-green-600"
+              }
+            )
+            setIsImportModalOpen(false)
+          }}
+        />
+      )}
     </div>
   )
 }
