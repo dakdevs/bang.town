@@ -15,10 +15,12 @@ export default function MainLayout({
   const isHomePage = pathname === "/"
 
   return (
-    <div className={`${bangers.variable} min-h-screen p-4 flex flex-col items-center gap-8 bg-gray-100 ${isHomePage ? bangers.className : ''}`}>
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
-        <h1 className="text-4xl mb-2 text-center text-blue-600 bangers">bang.town</h1>
-        <p className="text-center text-gray-600 mb-6">Your custom search engine with powerful (and shareable!) bang shortcuts.</p>
+    <div className={`${bangers.variable} min-h-screen p-4 flex flex-col items-center gap-8 bg-gray-100`}>
+      <div className={`bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl ${isHomePage ? bangers.className : ''}`}>
+        <a href="/" className="block hover:opacity-80 transition-opacity">
+          <h1 className="text-4xl mb-2 text-center text-blue-600 bangers">bang.town</h1>
+        </a>
+        <p className="text-center text-gray-600 mb-6 bangers text-xl">Your custom search engine with powerful (and shareable!) bang shortcuts.</p>
         <main>{children}</main>
       </div>
       <footer className="flex flex-col items-center text-gray-500 text-sm mt-auto px-4">
@@ -31,6 +33,13 @@ export default function MainLayout({
             className="text-blue-500 hover:text-blue-600 transition-colors"
           >
             @dakdevs
+          </a>
+          {" · "}
+          <a
+            href="/about"
+            className="text-blue-500 hover:text-blue-600 transition-colors"
+          >
+            About
           </a>
         </div>
         <a

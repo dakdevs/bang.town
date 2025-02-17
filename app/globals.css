@@ -3,25 +3,37 @@
 @tailwind utilities;
 
 body {
-  @apply text-gray-800;
+  @apply text-gray-800 text-lg;
 }
 
 h1 {
-  @apply text-4xl mb-6 text-center text-blue-600;
+  @apply text-5xl mb-6 text-center text-blue-600;
 }
 
 h2 {
-  @apply text-2xl mb-4 text-blue-500;
+  @apply text-3xl mb-4 text-blue-500;
+}
+
+h3 {
+  @apply text-xl font-semibold mb-3;
+}
+
+p {
+  @apply text-lg;
 }
 
 input {
-  @apply border border-gray-300 p-2 rounded;
+  @apply border border-gray-300 p-2 rounded text-lg;
 }
 
 button {
-  @apply bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors;
+  @apply bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors text-lg;
 }
 
 .bangers {
   font-family: var(--font-bangers);
+}
+
+code {
+  @apply text-base;
 }

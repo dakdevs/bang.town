@@ -14,21 +14,21 @@ export default function InstructionsPage() {
         <h2 className="text-2xl mb-4 text-blue-500 bangers">Chrome-based Browser Setup</h2>
         <div className="space-y-4">
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">1. Open Chrome Settings</h3>
+            <h3 className="font-semibold mb-2 bangers">1. Open Chrome Settings</h3>
             <p className="text-gray-600">
               Click the three dots menu (⋮) in the top right corner and select <span className="font-mono bg-gray-100 px-1 rounded">Settings</span>
             </p>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">2. Navigate to Search Engines</h3>
+            <h3 className="font-semibold mb-2 bangers">2. Navigate to Search Engines</h3>
             <p className="text-gray-600">
               In the left sidebar, click <span className="font-mono bg-gray-100 px-1 rounded">Search engine</span>, then click <span className="font-mono bg-gray-100 px-1 rounded">Manage search engines and site search</span>
             </p>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">3. Add New Search Engine</h3>
+            <h3 className="font-semibold mb-2 bangers">3. Add New Search Engine</h3>
             <p className="text-gray-600 mb-2">
               Under "Site search", click <span className="font-mono bg-gray-100 px-1 rounded">Add</span> and fill in the following:
             </p>
@@ -40,7 +40,7 @@ export default function InstructionsPage() {
           </div>
 
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">4. Using Your Bangs</h3>
+            <h3 className="font-semibold mb-2 bangers">4. Using Your Bangs</h3>
             <p className="text-gray-600 mb-2">
               Now you can use your bangs in two ways:
             </p>
@@ -56,21 +56,21 @@ export default function InstructionsPage() {
         <h2 className="text-2xl mb-4 text-blue-500 bangers">Arc Browser Setup</h2>
         <div className="space-y-4">
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">1. Open Arc Settings</h3>
+            <h3 className="font-semibold mb-2 bangers">1. Open Arc Settings</h3>
             <p className="text-gray-600">
               Click <span className="font-mono bg-gray-100 px-1 rounded">Arc</span> in the menu bar, then select <span className="font-mono bg-gray-100 px-1 rounded">Settings</span>
             </p>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">2. Navigate to Search Settings</h3>
+            <h3 className="font-semibold mb-2 bangers">2. Navigate to Search Settings</h3>
             <p className="text-gray-600">
               Click <span className="font-mono bg-gray-100 px-1 rounded">Profiles</span> in the sidebar, then click <span className="font-mono bg-gray-100 px-1 rounded">Search settings</span>
             </p>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">3. Add Search Engine</h3>
+            <h3 className="font-semibold mb-2 bangers">3. Add Search Engine</h3>
             <p className="text-gray-600 mb-2">
               Click <span className="font-mono bg-gray-100 px-1 rounded">+ Add search engine</span> and enter:
             </p>
@@ -82,7 +82,7 @@ export default function InstructionsPage() {
           </div>
 
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">4. Using Your Bangs</h3>
+            <h3 className="font-semibold mb-2 bangers">4. Using Your Bangs</h3>
             <p className="text-gray-600 mb-2">
               In Arc, you can use your bangs in the command bar:
             </p>
@@ -93,7 +93,7 @@ export default function InstructionsPage() {
           </div>
 
           <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500">
-            <h3 className="font-semibold mb-2">Pro Tip</h3>
+            <h3 className="font-semibold mb-2 bangers">Pro Tip</h3>
             <p className="text-gray-600">
               Arc's command bar is accessible from any tab with <span className="font-mono bg-gray-100 px-1 rounded">⌘ + T</span>, making your bangs always just a keystroke away!
             </p>
@@ -102,7 +102,7 @@ export default function InstructionsPage() {
       </div>
 
       <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-        <h3 className="font-semibold mb-2">Need to Update Your Bangs?</h3>
+        <h3 className="font-semibold mb-2 bangers">Need to Update Your Bangs?</h3>
         <p className="text-gray-600">
           Remember, you can always return to your settings page by using <span className="font-mono bg-gray-100 px-1 rounded">!settings</span> in your browser's address bar.
         </p>
