@@ -1,5 +1,7 @@
 import type React from "react"
 import { Bangers } from "next/font/google"
+import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import "./globals.css"
 
 const bangers = Bangers({ weight: "400", subsets: ["latin"], variable: '--font-bangers' })
@@ -55,7 +57,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={bangers.variable}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+        <SpeedInsights />
+      </body>
     </html>
   )
 }

@@ -210,7 +210,16 @@ function HomeContent() {
             onClick={(e) => e.currentTarget.select()}
           />
           <button
-            onClick={() => navigator.clipboard.writeText(fullUrl)}
+            onClick={() => {
+              navigator.clipboard.writeText(fullUrl)
+              toast.success(
+                "URL copied!",
+                {
+                  description: "Your custom search URL has been copied to your clipboard.",
+                  className: "bg-green-500 text-white border-green-600"
+                }
+              )
+            }}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors whitespace-nowrap"
           >
             Copy
