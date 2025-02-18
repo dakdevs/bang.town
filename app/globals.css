@@ -121,7 +121,7 @@ code {
 /* Custom dot animation */
 .floating-dot {
   @apply absolute font-bold;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 200, 150, 0.5);
   animation: float 8s ease-in-out infinite;
   font-family: var(--font-bangers);
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);

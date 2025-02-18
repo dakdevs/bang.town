@@ -44,7 +44,7 @@ export default function MainLayout({
         {points.map((point, index) => (
           <div
             key={index}
-            className={`floating-dot ${point.size} select-none`}
+            className={`floating-dot ${point.size} select-none text-primary/10`}
             style={{
               left: point.left,
               top: point.top,
