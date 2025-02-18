@@ -2,32 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --primary: #ff5733;
+  --primary-light: #ff8c69;
+  --primary-dark: #e64a19;
+  --background: #ff7657;
+  --surface: #fff5f2;
+  --text: #2d3436;
+  --text-light: #4a4a4a;
+  --accent: #ffdfd7;
+}
+
 body {
-  @apply text-gray-800 text-lg;
+  color: var(--text);
+  @apply text-lg;
+  background-color: var(--background);
 }
 
 h1 {
-  @apply text-5xl mb-6 text-center text-blue-600;
+  @apply text-5xl mb-6 text-center;
+  color: var(--primary);
 }
 
 h2 {
-  @apply text-3xl mb-4 text-blue-500;
+  @apply text-3xl mb-4;
+  color: var(--primary);
 }
 
 h3 {
   @apply text-xl font-semibold mb-3;
+  color: var(--text);
 }
 
 p {
   @apply text-lg;
+  color: var(--text);
 }
 
 input {
-  @apply border border-gray-300 p-2 rounded text-lg;
+  @apply border-0 p-2 rounded-lg text-lg shadow-sm;
+  background-color: white;
+}
+
+input:focus {
+  @apply outline-none ring-2;
+  ring-color: var(--primary-light);
 }
 
 button {
-  @apply bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors text-lg;
+  @apply px-4 py-2 rounded-lg text-lg transition-all duration-200 shadow-sm;
+  background-color: var(--primary);
+  color: white;
+}
+
+button:hover {
+  @apply shadow-md;
+  background-color: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+button:focus {
+  @apply outline-none ring-2;
+  ring-color: var(--primary-dark);
 }
 
 .bangers {
@@ -36,4 +72,69 @@ button {
 
 code {
   @apply text-base;
+  background-color: var(--surface);
+  color: var(--text);
+}
+
+/* Custom gradient backgrounds */
+.gradient-header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+}
+
+.gradient-header-secondary {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--accent) 100%);
+}
+
+/* Card styles */
+.card {
+  @apply rounded-xl shadow-lg p-4 backdrop-blur-sm;
+  background-color: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+  @apply shadow-xl;
+  transform: translateY(-2px);
+}
+
+/* Custom button styles */
+.button-primary {
+  background-color: var(--primary);
+  color: white;
+}
+
+.button-primary:hover {
+  background-color: var(--primary-dark);
+}
+
+.button-secondary {
+  background-color: var(--surface);
+  color: var(--primary);
+  border: 1px solid var(--primary-light);
+}
+
+.button-secondary:hover {
+  background-color: var(--accent);
+}
+
+/* Custom dot animation */
+.floating-dot {
+  @apply absolute font-bold;
+  color: rgba(255, 255, 255, 0.4);
+  animation: float 8s ease-in-out infinite;
+  font-family: var(--font-bangers);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-20px) rotate(10deg);
+  }
 }

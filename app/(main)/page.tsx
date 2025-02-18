@@ -48,6 +48,7 @@ function HomeContent() {
   const [deleteConfirmation, setDeleteConfirmation] = useState<{ key: string } | null>(null)
   const [initialUrl, setInitialUrl] = useState("")
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [initialParams, setInitialParams] = useState<string>("")
 
   // Get default bang from URL params
   const defaultBang = searchParams.get('default') || 'ddg'
@@ -96,13 +97,14 @@ function HomeContent() {
     customBangsLength: 0
   })
 
-  // Track initial URL on first load
+  // Track initial URL and params on first load
   useEffect(() => {
     const currentUrl = window.location.origin
     const params = new URLSearchParams(searchParams.toString())
     const urlParams = params.toString().replace(/&?q=[^&]*/, "")
     const initialFullUrl = `${currentUrl}/b/?${urlParams}&q=%s`
     setInitialUrl(initialFullUrl)
+    setInitialParams(urlParams)
   }, []) // Empty dependency array means this only runs once on mount
 
   // Update fullUrl and check for changes
@@ -169,8 +171,12 @@ function HomeContent() {
   const customBangs = useMemo(() => {
     return Array.from(searchParams.entries())
       .filter(([key]) => key !== "q" && key !== "default")
-      .map(([key, url]) => ({ key, url }))
-  }, [searchParams])
+      .map(([key, url]) => ({
+        key,
+        url,
+        isNew: initialParams && !initialParams.includes(key)
+      }))
+  }, [searchParams, initialParams])
 
   // Update ref when values change
   useEffect(() => {
@@ -562,14 +568,13 @@ function HomeContent() {
             <ul className="space-y-3" role="list" aria-label="Custom bangs list">
               {filteredBangs
                 .sort((a, b) => {
-                  const aIsNew = !initialUrl.includes(a.key)
-                  const bIsNew = !initialUrl.includes(b.key)
+                  const aIsNew = a.isNew
+                  const bIsNew = b.isNew
                   if (aIsNew && !bIsNew) return -1
                   if (!aIsNew && bIsNew) return 1
                   return 0
                 })
-                .map(({ key, url }) => {
-                  const isNew = !initialUrl.includes(key)
+                .map(({ key, url, isNew }) => {
                   const isDefault = key === defaultBang
                   return (
                     <li key={key} className={`${isDefault ? "bg-blue-50 border-blue-200" : "bg-white border-gray-100"} rounded-lg p-2 flex flex-col gap-2`} role="listitem">
