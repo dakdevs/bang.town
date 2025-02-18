@@ -529,95 +529,92 @@ function HomeContent() {
                   const isNew = !initialBangs.has(key)
                   const isDefault = key === defaultBang
                   return (
-                    <li key={key} className={`${isDefault ? "bg-blue-50 border-blue-200" : "bg-white border-gray-100"} rounded-lg shadow-sm border overflow-hidden transition-colors`} role="listitem">
-                      <div className="flex flex-col p-3">
-                        <div className="flex items-center gap-3">
+                    <li key={key} className={`${isDefault ? "bg-blue-50 border-blue-200" : "bg-white border-gray-100"} rounded-lg p-2 flex flex-col gap-2`} role="listitem">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-[200px]">
                           <code className={`${isDefault ? "bg-blue-100 border-blue-200 text-blue-800" : "bg-blue-50 border-blue-100 text-blue-700"} px-2 py-1 rounded-md font-mono text-sm border font-medium min-w-[3rem] text-center`}>
                             !{key}
                           </code>
                           <span className="text-gray-300 select-none">→</span>
-                          <span className={`${isDefault ? "text-blue-800" : "text-purple-700"} font-medium text-lg`}>
+                          <span className={`${isDefault ? "text-blue-800" : "text-purple-700"} font-medium truncate`}>
                             {new URL(`https://${url}`).hostname}
                           </span>
-                          {isNew && (
-                            <span className="text-blue-600 text-xs font-medium px-2 py-1 bg-blue-50 rounded-md border border-blue-200" role="status">
-                              New
-                            </span>
-                          )}
-                          {isDefault && (
-                            <span className="text-blue-600 text-xs font-medium px-2 py-1 bg-blue-50 rounded-md border border-blue-200" role="status">
-                              Default
-                            </span>
-                          )}
                         </div>
-                        <div className="mt-2 ml-[3.5rem] flex items-center gap-2">
-                          <span className="text-gray-400 text-sm font-medium">URL:</span>
-                          <code className={`${isDefault ? "bg-blue-50 border-blue-100" : "bg-gray-50 border-gray-100"} text-gray-600 px-2 py-1 rounded-md font-mono text-sm border flex-1 flex items-center gap-1 overflow-x-auto`}>
-                            <span>https://</span>
-                            {url.split("%s").map((part, index, array) => (
-                              <span key={index}>
-                                <span>{part}</span>
-                                {index < array.length - 1 && (
-                                  <span className="px-1.5 py-0.5 bg-yellow-100 border border-yellow-300 rounded text-yellow-800 font-bold mx-0.5">
-                                    %s
-                                  </span>
-                                )}
+                        {(isNew || isDefault) && (
+                          <div className="flex gap-1">
+                            {isNew && (
+                              <span className="text-blue-600 text-xs font-medium px-2 py-1 bg-blue-50 rounded-md border border-blue-200" role="status">
+                                New
                               </span>
-                            ))}
-                          </code>
+                            )}
+                            {isDefault && (
+                              <span className="text-blue-600 text-xs font-medium px-2 py-1 bg-blue-50 rounded-md border border-blue-200" role="status">
+                                Default
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        <div className="flex-1 flex items-center">
+                          <input
+                            type="text"
+                            value={`https://${url}`}
+                            readOnly
+                            className={`${isDefault ? "bg-blue-50 border-blue-100" : "bg-gray-50 border-gray-100"} text-gray-600 px-2 py-1 rounded-md font-mono text-sm border flex-1 overflow-x-auto focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                            onClick={(e) => e.currentTarget.select()}
+                          />
                         </div>
-                        <div className="mt-3 ml-[3.5rem] flex gap-2">
-                          <button
-                            onClick={() => {
-                              const updatedSearchParams = new URLSearchParams(searchParams.toString())
-                              updatedSearchParams.set('default', key)
-                              router.push(`/?${updatedSearchParams.toString()}`)
-                              toast.success(
-                                "Default bang updated!",
-                                {
-                                  description: `Searches without a bang will now use !${key}`,
-                                  className: "bg-green-500 text-white border-green-600"
-                                }
-                              )
-                            }}
-                            disabled={isDefault}
-                            className={`text-sm px-3 py-1 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center gap-1.5 ${isDefault
-                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                              : "bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-blue-500"
-                              }`}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                            </svg>
-                            {isDefault ? "Default" : "Set Default"}
-                          </button>
-                          <button
-                            onClick={() => handleShareBang(key, url)}
-                            className="text-sm px-3 py-1 rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center gap-1.5"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <circle cx="18" cy="5" r="3" />
-                              <circle cx="6" cy="12" r="3" />
-                              <circle cx="18" cy="19" r="3" />
-                              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                            </svg>
-                            Share
-                          </button>
-                          <button
-                            onClick={() => handleDeleteBang(key)}
-                            className="text-sm px-3 py-1 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center gap-1.5"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M3 6h18" />
-                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                              <line x1="10" y1="11" x2="10" y2="17" />
-                              <line x1="14" y1="11" x2="14" y2="17" />
-                            </svg>
-                            Delete
-                          </button>
-                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => {
+                            const updatedSearchParams = new URLSearchParams(searchParams.toString())
+                            updatedSearchParams.set('default', key)
+                            router.push(`/?${updatedSearchParams.toString()}`, { scroll: false })
+                            toast.success(
+                              "Default bang updated!",
+                              {
+                                description: `Searches without a bang will now use !${key}`,
+                                className: "bg-green-500 text-white border-green-600"
+                              }
+                            )
+                          }}
+                          disabled={isDefault}
+                          className={`text-sm px-3 py-1 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center gap-1.5 ${isDefault
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-blue-500"
+                            }`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                          </svg>
+                          {isDefault ? "Default" : "Set Default"}
+                        </button>
+                        <button
+                          onClick={() => handleShareBang(key, url)}
+                          className="text-sm px-3 py-1 rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center gap-1.5"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="18" cy="5" r="3" />
+                            <circle cx="6" cy="12" r="3" />
+                            <circle cx="18" cy="19" r="3" />
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                          </svg>
+                          Share
+                        </button>
+                        <button
+                          onClick={() => handleDeleteBang(key)}
+                          className="text-sm px-3 py-1 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center gap-1.5"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 6h18" />
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                            <line x1="10" y1="11" x2="10" y2="17" />
+                            <line x1="14" y1="11" x2="14" y2="17" />
+                          </svg>
+                          Delete
+                        </button>
                       </div>
                     </li>
                   )
@@ -637,22 +634,24 @@ function HomeContent() {
           <h2 id="builtin-bangs-heading" className="text-xl sm:text-2xl text-white">Built-in Bangs</h2>
           <p className="text-sm text-gray-200">These are the built-in bangs that come with bang.town</p>
         </div>
-        <ul className="space-y-3" role="list" aria-label="Built-in bangs list">
+        <ul className="space-y-2" role="list" aria-label="Built-in bangs list">
           {Object.entries(defaultBangs).map(([key, url]) => {
             const isOverridden = searchParams.has(key)
             const name = getBangName(key)
             const isDefault = key === defaultBang
             return (
-              <li key={key} className={`${isOverridden ? "opacity-75" : ""} ${isDefault ? "bg-blue-50 border-blue-200" : "bg-white border-gray-100"} rounded-lg shadow-sm border overflow-hidden transition-colors`} role="listitem">
-                <div className="flex flex-col p-3">
-                  <div className="flex items-center gap-3">
-                    <code className={`${isOverridden ? "line-through" : ""} ${isDefault ? "bg-blue-100 border-blue-200 text-blue-800" : "bg-blue-50 border-blue-100 text-blue-700"} px-2 py-1 rounded-md font-mono text-sm border font-medium min-w-[3rem] text-center`}>
-                      !{key}
-                    </code>
-                    <span className="text-gray-300 select-none">→</span>
-                    <span className={`${isOverridden ? "line-through" : ""} ${isDefault ? "text-blue-800" : "text-purple-700"} font-medium text-lg`}>
-                      {name}
-                    </span>
+              <li key={key} className={`${isOverridden ? "opacity-75" : ""} ${isDefault ? "bg-blue-50" : "bg-white"} border ${isDefault ? "border-blue-200" : "border-gray-100"} rounded-lg p-2 flex flex-wrap items-center gap-2`} role="listitem">
+                <div className="flex items-center gap-2 min-w-[200px]">
+                  <code className={`${isOverridden ? "line-through" : ""} ${isDefault ? "bg-blue-100 border-blue-200 text-blue-800" : "bg-blue-50 border-blue-100 text-blue-700"} px-2 py-1 rounded-md font-mono text-sm border font-medium min-w-[3rem] text-center`}>
+                    !{key}
+                  </code>
+                  <span className="text-gray-300 select-none">→</span>
+                  <span className={`${isOverridden ? "line-through" : ""} ${isDefault ? "text-blue-800" : "text-purple-700"} font-medium truncate`}>
+                    {name}
+                  </span>
+                </div>
+                {(isOverridden || isDefault) && (
+                  <div className="flex gap-1">
                     {isOverridden && (
                       <span className="text-red-500 text-xs font-medium px-2 py-1 bg-red-50 rounded-md border border-red-100" role="status">
                         Overridden
@@ -664,48 +663,39 @@ function HomeContent() {
                       </span>
                     )}
                   </div>
-                  <div className="mt-2 ml-[3.5rem] flex items-center gap-2">
-                    <span className="text-gray-400 text-sm font-medium">URL:</span>
-                    <code className={`${isOverridden ? "line-through" : ""} ${isDefault ? "bg-blue-50 border-blue-100" : "bg-gray-50 border-gray-100"} text-gray-600 px-2 py-1 rounded-md font-mono text-sm border flex-1 flex items-center gap-1 overflow-x-auto`}>
-                      <span>https://</span>
-                      {url.split("%s").map((part, index, array) => (
-                        <span key={index}>
-                          <span>{part}</span>
-                          {index < array.length - 1 && (
-                            <span className="px-1.5 py-0.5 bg-yellow-100 border border-yellow-300 rounded text-yellow-800 font-bold mx-0.5">
-                              %s
-                            </span>
-                          )}
-                        </span>
-                      ))}
-                    </code>
-                  </div>
-                  <div className="mt-3 ml-[3.5rem] flex gap-2">
-                    <button
-                      onClick={() => {
-                        const updatedSearchParams = new URLSearchParams(searchParams.toString())
-                        updatedSearchParams.set('default', key)
-                        router.push(`/?${updatedSearchParams.toString()}`)
-                        toast.success(
-                          "Default bang updated!",
-                          {
-                            description: `Searches without a bang will now use !${key}`,
-                            className: "bg-green-500 text-white border-green-600"
-                          }
-                        )
-                      }}
-                      disabled={isDefault}
-                      className={`text-sm px-3 py-1 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center gap-1.5 ${isDefault
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-blue-500"
-                        }`}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                      </svg>
-                      {isDefault ? "Default" : "Set Default"}
-                    </button>
-                  </div>
+                )}
+                <div className="flex-1 flex items-center gap-2 min-w-[300px]">
+                  <input
+                    type="text"
+                    value={`https://${url}`}
+                    readOnly
+                    className={`${isOverridden ? "line-through" : ""} ${isDefault ? "bg-blue-50 border-blue-100" : "bg-gray-50 border-gray-100"} text-gray-600 px-2 py-1 rounded-md font-mono text-sm border flex-1 overflow-x-auto focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                    onClick={(e) => e.currentTarget.select()}
+                  />
+                  <button
+                    onClick={() => {
+                      const updatedSearchParams = new URLSearchParams(searchParams.toString())
+                      updatedSearchParams.set('default', key)
+                      router.push(`/?${updatedSearchParams.toString()}`, { scroll: false })
+                      toast.success(
+                        "Default bang updated!",
+                        {
+                          description: `Searches without a bang will now use !${key}`,
+                          className: "bg-green-500 text-white border-green-600"
+                        }
+                      )
+                    }}
+                    disabled={isDefault}
+                    className={`text-sm px-3 py-1 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center gap-1.5 ${isDefault
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-blue-500"
+                      }`}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                    </svg>
+                    {isDefault ? "Default" : "Set Default"}
+                  </button>
                 </div>
               </li>
             )
