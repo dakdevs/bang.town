@@ -5,6 +5,11 @@ export function middleware(request: NextRequest) {
   // Get the response
   const response = NextResponse.next()
 
+  // Add cache headers for /b route
+  if (request.nextUrl.pathname.startsWith('/b')) {
+    response.headers.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800')
+  }
+
   // Security Headers
   const headers = response.headers
 
