@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, Suspense, useRef } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Toaster, toast } from "sonner"
 import Link from "next/link"
+import { track } from "@vercel/analytics"
 import { ImportBangModal, ConfirmDialog } from "../components/ImportBangModal"
 import { defaultBangs, getBangName } from "../lib/defaultBangs"
 
@@ -196,6 +197,11 @@ function HomeContent() {
       if ((e.ctrlKey || e.metaKey) && e.key === 'c' && document.activeElement?.id === 'custom-search-url') {
         e.preventDefault()
         navigator.clipboard.writeText(current.fullUrl)
+        track("custom_url_copied", {
+          url: current.fullUrl,
+          num_custom_bangs: customBangs.length,
+          default_bang: defaultBang
+        })
         toast.success(
           "URL copied!",
           {
@@ -283,6 +289,14 @@ function HomeContent() {
         return
       }
 
+      // Track custom bang creation
+      track("custom_bang_created", {
+        key: newBangKey,
+        domain: bangDomain,
+        template: cleanedUrl,
+        overrides_builtin: defaultBangs[newBangKey] ? true : false
+      })
+
       // If overriding a built-in bang, show warning toast
       if (defaultBangs[newBangKey]) {
         toast.warning(
@@ -326,6 +340,10 @@ function HomeContent() {
   const handleShare = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl)
+      track("settings_url_shared", {
+        num_custom_bangs: customBangs.length,
+        default_bang: defaultBang
+      })
       toast.success(
         "Settings URL copied!",
         {
@@ -344,6 +362,12 @@ function HomeContent() {
     const cleanUrl = url.replace(/^(https?:\/\/)/, "")
     const shareText = `${key}|${cleanUrl}`
     navigator.clipboard.writeText(shareText)
+    track("custom_bang_shared", {
+      key,
+      domain: new URL(`https://${cleanUrl}`).hostname,
+      template: cleanUrl,
+      is_default: key === defaultBang
+    })
     toast.success(
       "Bang code copied!",
       {
@@ -388,6 +412,11 @@ function HomeContent() {
             <button
               onClick={() => {
                 navigator.clipboard.writeText(fullUrl)
+                track("custom_url_copied", {
+                  url: fullUrl,
+                  num_custom_bangs: customBangs.length,
+                  default_bang: defaultBang
+                })
                 toast.success(
                   "URL copied!",
                   {

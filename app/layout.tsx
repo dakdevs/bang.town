@@ -7,7 +7,7 @@ import "./globals.css"
 const bangers = Bangers({ weight: "400", subsets: ["latin"], variable: '--font-bangers' })
 
 export const metadata = {
-  title: "Bang.town",
+  title: "bang.town",
   description: "Your custom search engine with powerful (and shareable!) bang shortcuts",
   icons: {
     icon: [
@@ -27,10 +27,10 @@ export const metadata = {
     }
   },
   openGraph: {
-    title: 'Bang.town',
+    title: 'bang.town',
     description: 'Your custom search engine with powerful (and shareable!) bang shortcuts',
     url: 'https://bang.town',
-    siteName: 'Bang.town',
+    siteName: 'bang.town',
     images: [
       {
         url: 'https://bang.town/api/og',
@@ -43,7 +43,7 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Bang.town',
+    title: 'bang.town',
     description: 'Your custom search engine with powerful (and shareable!) bang shortcuts',
     creator: '@dakdevs',
     images: ['https://bang.town/api/og'],
