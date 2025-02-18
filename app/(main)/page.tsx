@@ -577,26 +577,26 @@ function HomeContent() {
                 .map(({ key, url, isNew }) => {
                   const isDefault = key === defaultBang
                   return (
-                    <li key={key} className={`${isDefault ? "bg-primary-light border-primary text-white" : "bg-surface border-primary-light text-primary"} rounded-lg p-2 flex flex-col gap-2`} role="listitem">
-                      <div className="flex flex-wrap items-center gap-2">
+                    <li key={key} className={`${isDefault ? "bg-primary bg-opacity-5" : "bg-surface"} rounded-lg p-4 flex flex-col gap-3 border border-primary-light/10 hover:border-primary-light/30 transition-colors`} role="listitem">
+                      <div className="flex flex-wrap items-center gap-3">
                         <div className="flex items-center gap-2 min-w-[200px]">
-                          <code className={`${isDefault ? "bg-primary-light border-primary text-white" : "bg-surface border-primary-light text-primary"} px-2 py-1 rounded-md font-mono text-sm border font-medium min-w-[3rem] text-center`}>
+                          <code className={`${isDefault ? "bg-primary bg-opacity-10 border-primary/20" : "bg-surface border-primary-light/20"} px-3 py-1.5 rounded-md font-mono text-sm border font-medium min-w-[3rem] text-center text-primary`}>
                             !{key}
                           </code>
-                          <span className="text-text-light select-none">→</span>
-                          <span className={`${isDefault ? "text-primary-dark" : "text-primary"} font-medium`}>
+                          <span className="text-text-light/50 select-none">→</span>
+                          <span className="text-primary font-medium">
                             {new URL(`https://${url}`).hostname}
                           </span>
                         </div>
                         {(isNew || isDefault) && (
-                          <div className="flex gap-1">
+                          <div className="flex gap-1.5">
                             {isNew && (
-                              <span className="text-primary text-xs font-medium px-2 py-1 bg-surface rounded-md border border-primary-light" role="status">
+                              <span className="text-primary text-xs font-medium px-2 py-1 bg-primary bg-opacity-5 rounded-md border border-primary-light/20" role="status">
                                 New
                               </span>
                             )}
                             {isDefault && (
-                              <span className="text-primary text-xs font-medium px-2 py-1 bg-surface rounded-md border border-primary-light" role="status">
+                              <span className="text-primary text-xs font-medium px-2 py-1 bg-primary bg-opacity-5 rounded-md border border-primary-light/20" role="status">
                                 Default
                               </span>
                             )}
@@ -607,7 +607,7 @@ function HomeContent() {
                             type="text"
                             value={`https://${url}`}
                             readOnly
-                            className={`${isDefault ? "bg-primary-light border-primary text-white" : "bg-surface border-primary-light text-primary"} px-2 py-1 rounded-md font-mono text-sm border flex-1 overflow-x-auto focus:outline-none focus:ring-2 focus:ring-primary`}
+                            className={`${isDefault ? "bg-primary bg-opacity-5" : "bg-surface"} px-3 py-1.5 rounded-md font-mono text-sm border border-primary-light/20 flex-1 overflow-x-auto focus:outline-none focus:ring-2 focus:ring-primary text-text`}
                             onClick={(e) => e.currentTarget.select()}
                           />
                         </div>
@@ -631,9 +631,9 @@ function HomeContent() {
                             )
                           }}
                           disabled={isDefault}
-                          className={`text-sm px-3 py-1 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center gap-1.5 ${isDefault
-                            ? "bg-primary-light text-primary-dark cursor-not-allowed"
-                            : "bg-primary text-primary hover:bg-primary-dark focus:ring-primary"
+                          className={`text-sm px-3 py-1.5 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center gap-1.5 ${isDefault
+                            ? "bg-primary bg-opacity-5 text-primary/50 cursor-not-allowed"
+                            : "bg-primary bg-opacity-5 text-primary hover:bg-primary hover:text-white focus:ring-primary"
                             }`}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -643,7 +643,7 @@ function HomeContent() {
                         </button>
                         <button
                           onClick={() => handleShareBang(key, url)}
-                          className="text-sm px-3 py-1 rounded-md bg-primary text-white hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2 flex items-center gap-1.5"
+                          className="text-sm px-3 py-1.5 rounded-md bg-primary bg-opacity-5 text-primary hover:bg-primary hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center gap-1.5"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <circle cx="18" cy="5" r="3" />
@@ -656,7 +656,7 @@ function HomeContent() {
                         </button>
                         <button
                           onClick={() => handleDeleteBang(key)}
-                          className="text-sm px-3 py-1 rounded-md bg-primary-light text-white hover:bg-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center gap-1.5"
+                          className="text-sm px-3 py-1.5 rounded-md bg-primary bg-opacity-5 text-primary hover:bg-red-500 hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center gap-1.5"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M3 6h18" />
