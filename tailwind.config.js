@@ -15,34 +15,34 @@ module.exports = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        background: "#ff7657",
-        surface: "#fff5f2",
-        foreground: "#2d3436",
+        background: "#fff1ec",
+        surface: "#ffffff",
+        foreground: "#1a1a1a",
         primary: {
-          DEFAULT: "#ff5733",
-          light: "#ff8c69",
-          dark: "#e64a19",
+          DEFAULT: "#f05423",
+          light: "#ff7a50",
+          dark: "#d23c00",
           foreground: "white"
         },
         secondary: {
           DEFAULT: "white",
-          foreground: "#ff5733",
+          foreground: "#f05423",
         },
         destructive: {
-          DEFAULT: "#ff3b3b",
+          DEFAULT: "#dc2626",
           foreground: "white",
         },
         muted: {
-          DEFAULT: "#f1f1f1",
-          foreground: "#4a4a4a",
+          DEFAULT: "#f4f4f4",
+          foreground: "#666666",
         },
         accent: {
-          DEFAULT: "#ffdfd7",
-          foreground: "#2d3436",
+          DEFAULT: "#ffe4d9",
+          foreground: "#1a1a1a",
         },
         card: {
-          DEFAULT: "rgba(255, 255, 255, 0.9)",
-          foreground: "#2d3436",
+          DEFAULT: "rgba(255, 255, 255, 0.98)",
+          foreground: "#1a1a1a",
         },
       },
       borderRadius: {
