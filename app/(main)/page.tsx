@@ -47,6 +47,16 @@ function generateTwitterSearchUrl(username: string) {
   return `x.com/search?q=from%3A${username}%20%s`
 }
 
+function generateVercelLogsUrl(teamSlug: string, projectSlug: string, levels: string) {
+  // The %s will be automatically replaced with the search query, with spaces converted to +
+  return `vercel.com/${teamSlug}/${projectSlug}/logs?levels=${levels}&searchQuery=%s`
+}
+
+// Function to transform search query for Vercel logs
+function transformVercelSearchQuery(query: string) {
+  return query.replace(/ /g, '+')
+}
+
 function HomeContent() {
   const router = useRouter()
   const pathname = usePathname()
@@ -63,7 +73,8 @@ function HomeContent() {
   const [initialParams, setInitialParams] = useState<string>("")
   const [editingBang, setEditingBang] = useState<{ originalKey: string, key: string, url: string } | null>(null)
   const [isYouTubeMode, setIsYouTubeMode] = useState(false)
-  const [activeTab, setActiveTab] = useState<'custom' | 'youtube' | 'tweets' | 'more'>('custom')
+  const [activeTab, setActiveTab] = useState<'custom' | 'youtube' | 'tweets' | 'vercel' | 'more'>('custom')
+  const [vercelLevels, setVercelLevels] = useState<{ error: boolean, warning: boolean }>({ error: true, warning: false })
 
   // Get default bang from URL params
   const defaultBang = searchParams.get('default') || 'ddg'
@@ -131,6 +142,22 @@ function HomeContent() {
     const urlParams = params.toString().replace(/&?q=[^&]*/, "")
     const currentFullUrl = `${currentUrl}/b/?${urlParams}&q=%s`
     setFullUrl(currentFullUrl)
+
+    // For Vercel logs URLs, transform the search query
+    const searchQuery = params.get('q')
+    if (searchQuery && searchQuery.startsWith('!')) {
+      const [bangKey] = searchQuery.slice(1).split(' ', 1)
+      const bangUrl = params.get(bangKey)
+      if (bangUrl && bangUrl.startsWith('vercel.com') && bangUrl.includes('/logs?')) {
+        const query = searchQuery.slice(bangKey.length + 2) // +2 for '!' and space
+        if (query) {
+          const transformedQuery = transformVercelSearchQuery(query)
+          const updatedParams = new URLSearchParams(params.toString())
+          updatedParams.set('q', `!${bangKey} ${transformedQuery}`)
+          router.replace(`/?${updatedParams.toString()}`, { scroll: false })
+        }
+      }
+    }
 
     // Check for changes only if initialUrl has been set
     if (initialUrl) {
@@ -268,16 +295,31 @@ function HomeContent() {
         return
       }
 
-      // Check if URL contains %s placeholder
-      if (!cleanedUrl.includes("%s")) {
-        toast.error(
-          "Missing search term placeholder!",
-          {
-            description: "The URL must contain %s where the search term should be inserted (e.g., example.com/search?q=%s)",
-            className: "bg-red-500 text-white border-red-600"
-          }
-        )
-        return
+      // For Vercel logs URLs, we'll handle space conversion in the search query
+      if (cleanedUrl.startsWith('vercel.com') && cleanedUrl.includes('/logs?')) {
+        const searchPlaceholder = '%s'
+        if (!cleanedUrl.includes(searchPlaceholder)) {
+          toast.error(
+            "Missing search term placeholder!",
+            {
+              description: "The URL must contain %s where the search term should be inserted",
+              className: "bg-red-500 text-white border-red-600"
+            }
+          )
+          return
+        }
+      } else {
+        // For other URLs, check if URL contains %s placeholder
+        if (!cleanedUrl.includes("%s")) {
+          toast.error(
+            "Missing search term placeholder!",
+            {
+              description: "The URL must contain %s where the search term should be inserted (e.g., example.com/search?q=%s)",
+              className: "bg-red-500 text-white border-red-600"
+            }
+          )
+          return
+        }
       }
 
       // Check for exact duplicate (same key AND same URL)
@@ -518,6 +560,18 @@ function HomeContent() {
             Tweets
           </button>
           <button
+            onClick={() => setActiveTab('vercel')}
+            className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === 'vercel'
+              ? "bg-primary text-white"
+              : "bg-white text-primary hover:bg-primary hover:text-white"
+              }`}
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M24 22.525H0l12-21.05 12 21.05z" />
+            </svg>
+            Vercel Logs
+          </button>
+          <button
             onClick={() => setActiveTab('more')}
             className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap text-sm bg-[#FFD7CC] text-primary opacity-50 cursor-not-allowed`}
             disabled
@@ -740,6 +794,111 @@ function HomeContent() {
               </div>
               <div className="text-text-light bg-accent p-4 rounded">
                 <strong>Example:</strong> Adding <code className="bg-surface px-2 py-0.5 rounded">!g</code> with username <code className="bg-surface px-2 py-0.5 rounded">@rauchg</code> will let you search G's tweets using <code className="bg-surface px-2 py-0.5 rounded">!g AI</code>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'vercel' && (
+            <div className="space-y-4">
+              <p className="text-text-light text-sm">
+                Create a bang to search Vercel logs for a specific project. Enter your team and project slugs, and choose which log levels to include.
+              </p>
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative w-full sm:w-1/4">
+                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-text-light" aria-hidden="true">!</span>
+                    <input
+                      type="text"
+                      value={newBangKey}
+                      onChange={(e) => setNewBangKey(e.target.value)}
+                      placeholder="vl"
+                      aria-label="Bang key"
+                      className="w-full border border-primary-light pl-8 pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          document.getElementById('vercel-team-input')?.focus()
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="flex-grow space-y-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          id="vercel-team-input"
+                          type="text"
+                          value={newBangUrl}
+                          onChange={(e) => setNewBangUrl(e.target.value)}
+                          placeholder="TEAM SLUG"
+                          aria-label="Vercel team slug"
+                          className="w-full border border-primary-light px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-light/50 uppercase"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              document.getElementById('vercel-project-input')?.focus()
+                            }
+                          }}
+                        />
+                      </div>
+                      <div className="relative flex-1">
+                        <input
+                          id="vercel-project-input"
+                          type="text"
+                          placeholder="PROJECT SLUG"
+                          aria-label="Vercel project slug"
+                          className="w-full border border-primary-light px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-light/50 uppercase"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <label className="flex items-center gap-2 text-sm text-text-light">
+                        <input
+                          type="checkbox"
+                          checked={vercelLevels.error}
+                          onChange={(e) => setVercelLevels(prev => ({ ...prev, error: e.target.checked }))}
+                          className="rounded border-primary-light text-primary focus:ring-primary"
+                        />
+                        Error
+                      </label>
+                      <label className="flex items-center gap-2 text-sm text-text-light">
+                        <input
+                          type="checkbox"
+                          checked={vercelLevels.warning}
+                          onChange={(e) => setVercelLevels(prev => ({ ...prev, warning: e.target.checked }))}
+                          className="rounded border-primary-light text-primary focus:ring-primary"
+                        />
+                        Warning
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    if (newBangKey && newBangUrl) {
+                      const teamSlug = newBangUrl
+                      const projectSlug = (document.getElementById('vercel-project-input') as HTMLInputElement)?.value
+                      const levels = [
+                        vercelLevels.error && 'error',
+                        vercelLevels.warning && 'warning'
+                      ].filter(Boolean).join('%2C')
+                      const url = generateVercelLogsUrl(teamSlug, projectSlug, levels)
+                      setNewBangUrl(url)
+                      handleAddBang()
+                    }
+                  }}
+                  aria-label="Add Vercel logs search bang"
+                  className="w-full bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2 flex items-center justify-center gap-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                  Add Bang
+                </button>
+              </div>
+              <div className="text-text-light bg-accent p-4 rounded">
+                <strong>Example:</strong> Adding <code className="bg-surface px-2 py-0.5 rounded">!vl</code> with team <code className="bg-surface px-2 py-0.5 rounded">team-slug</code> and project <code className="bg-surface px-2 py-0.5 rounded">project-name</code> will let you search logs using <code className="bg-surface px-2 py-0.5 rounded">!vl api error</code>
               </div>
             </div>
           )}
