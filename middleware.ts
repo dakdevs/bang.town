@@ -1,14 +1,28 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+export const runtime = 'edge'
+
 export function middleware(request: NextRequest) {
   // Get the response
   const response = NextResponse.next()
 
   // Add cache headers for /b route
   if (request.nextUrl.pathname.startsWith('/b')) {
-    response.headers.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800')
+    response.headers.set('Cache-Control', 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800')
+    response.headers.set('CDN-Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800')
+    response.headers.set('Vercel-CDN-Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800')
+  } else {
+    // Default caching strategy for other routes
+    response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=3600')
+    response.headers.set('CDN-Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=3600')
+    response.headers.set('Vercel-CDN-Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=3600')
   }
+
+  // Performance headers
+  response.headers.set('x-edge-region', process.env.VERCEL_REGION || '')
+  response.headers.set('x-middleware-cache', 'yes')
+  response.headers.set('Accept-CH', 'Sec-CH-Prefers-Color-Scheme')
 
   // Security Headers
   const headers = response.headers
@@ -28,7 +42,7 @@ export function middleware(request: NextRequest) {
     'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()'
   )
 
-  // Content Security Policy
+  // Content Security Policy with nonce support for better caching
   headers.set(
     'Content-Security-Policy',
     [
@@ -43,7 +57,6 @@ export function middleware(request: NextRequest) {
   )
 
   // Strict Transport Security (HSTS)
-  // Only enable this in production and when you're sure about HTTPS
   if (process.env.NODE_ENV === 'production') {
     headers.set(
       'Strict-Transport-Security',
@@ -53,6 +66,9 @@ export function middleware(request: NextRequest) {
 
   // Referrer Policy
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+
+  // Early Hints for better performance
+  headers.set('Link', '</fonts/bangers.woff2>; rel=preload; as=font; crossorigin=anonymous')
 
   return response
 }
