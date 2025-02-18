@@ -10,6 +10,8 @@ const defaultBangs: Record<string, string> = {
   w: "en.wikipedia.org/w/index.php?search=",
   c: "chat.openai.com/?q=",
   "4o": "chat.openai.com/?model=gpt-4&q=",
+  s: "chatgpt.com?model=gpt-4o&hints=search&q=",
+  t3: "www.t3.chat/new?q=",
   yt: "www.youtube.com/results?search_query=",
   gh: "github.com/search?q=",
   so: "stackoverflow.com/search?q=",
@@ -18,7 +20,6 @@ const defaultBangs: Record<string, string> = {
   x: "x.com/search?q=",
   imdb: "www.imdb.com/find?q=",
   map: "www.google.com/maps?q=",
-  t3: "www.t3.chat/new?q=",
 }
 
 function generateBangCode(key: string, url: string) {
@@ -38,6 +39,26 @@ function decodeBangCode(code: string) {
   }
 }
 
+function getBangName(key: string): string {
+  const names: Record<string, string> = {
+    g: "Google Search",
+    w: "Wikipedia",
+    c: "ChatGPT",
+    "4o": "ChatGPT with GPT-4",
+    s: "ChatGPT Search with GPT-4",
+    t3: "T3 Chat",
+    yt: "YouTube",
+    gh: "GitHub",
+    so: "Stack Overflow",
+    a: "Amazon",
+    r: "Reddit",
+    x: "X (Twitter)",
+    imdb: "IMDb",
+    map: "Google Maps",
+  }
+  return names[key] || key
+}
+
 function HomeContent() {
   const router = useRouter()
   const pathname = usePathname()
@@ -51,6 +72,9 @@ function HomeContent() {
   const [deleteConfirmation, setDeleteConfirmation] = useState<{ key: string } | null>(null)
   const [initialBangs, setInitialBangs] = useState<Set<string>>(new Set())
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+
+  // Get default bang from URL params
+  const defaultBang = searchParams.get('default') || 'ddg'
 
   // Ref to store current values for keyboard shortcuts
   const currentValuesRef = useRef({
@@ -82,9 +106,19 @@ function HomeContent() {
     setHasUnsavedChanges(hasChanges)
   }, [searchParams, initialBangs])
 
+  // Update fullUrl and shareUrl to include default bang
   useEffect(() => {
     const currentUrl = window.location.origin
-    setFullUrl(`${currentUrl}/b/?${searchParams.toString().replace(/&?q=[^&]*/, "")}&q=%s`)
+    const params = new URLSearchParams(searchParams.toString())
+
+    // Ensure default bang is preserved in the URL
+    if (!params.has('default')) {
+      params.set('default', 'ddg')
+    }
+
+    // Remove q parameter if it exists and add placeholder
+    const urlParams = params.toString().replace(/&?q=[^&]*/, "")
+    setFullUrl(`${currentUrl}/b/?${urlParams}&q=%s`)
 
     // Generate share URL that redirects to settings with current bangs
     const customBangs = new URLSearchParams()
@@ -93,13 +127,17 @@ function HomeContent() {
         customBangs.set(key, value)
       }
     })
+    // Ensure default bang is included in share URL
+    if (!customBangs.has('default')) {
+      customBangs.set('default', 'ddg')
+    }
     setShareUrl(`${currentUrl}/b/?${customBangs.toString()}&q=!settings`)
   }, [searchParams])
 
   // Get custom bangs
   const customBangs = useMemo(() => {
     return Array.from(searchParams.entries())
-      .filter(([key]) => key !== "q")
+      .filter(([key]) => key !== "q" && key !== "default")
       .map(([key, url]) => ({ key, url }))
   }, [searchParams])
 
@@ -185,18 +223,45 @@ function HomeContent() {
         return
       }
 
-      // Check for duplicate bang key
-      if (searchParams.has(newBangKey) || defaultBangs[newBangKey]) {
+      // Check for exact duplicate (same key AND same URL)
+      const existingCustomUrl = searchParams.get(newBangKey)
+      const existingDefaultUrl = defaultBangs[newBangKey]?.replace(/^(https?:\/\/)/, "")
+
+      if ((existingCustomUrl && existingCustomUrl === cleanedUrl) ||
+        (existingDefaultUrl && existingDefaultUrl === cleanedUrl)) {
         toast.error(
-          `The bang !${newBangKey} already exists!`,
+          `The bang !${newBangKey} with this URL already exists!`,
           {
-            description: defaultBangs[newBangKey]
-              ? "This is a default bang - try a different key."
-              : "You already have a custom bang with this key.",
+            description: existingDefaultUrl === cleanedUrl
+              ? "This exact bang is already available as a default bang."
+              : "You already have this exact custom bang.",
             className: "bg-red-500 text-white border-red-600"
           }
         )
         return
+      }
+
+      // If key exists in custom bangs, show error
+      if (searchParams.has(newBangKey)) {
+        toast.error(
+          `The bang !${newBangKey} already exists!`,
+          {
+            description: "You already have a custom bang with this key.",
+            className: "bg-red-500 text-white border-red-600"
+          }
+        )
+        return
+      }
+
+      // If overriding a default bang, show warning toast
+      if (defaultBangs[newBangKey]) {
+        toast.warning(
+          `Overriding default bang !${newBangKey}`,
+          {
+            description: "Your custom bang will take precedence over the default bang.",
+            className: "bg-yellow-500 text-white border-yellow-600"
+          }
+        )
       }
 
       const updatedSearchParams = new URLSearchParams(searchParams.toString())
@@ -268,9 +333,30 @@ function HomeContent() {
     )
   }, [customBangs, searchQuery])
 
+  // Handle default bang change
+  const handleDefaultBangChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newDefaultBang = e.target.value
+    const updatedSearchParams = new URLSearchParams(searchParams.toString())
+    updatedSearchParams.set('default', newDefaultBang)
+    router.push(`/?${updatedSearchParams.toString()}`)
+
+    toast.success(
+      "Default bang updated!",
+      {
+        description: `Searches without a bang will now use !${newDefaultBang}`,
+        className: "bg-green-500 text-white border-green-600"
+      }
+    )
+  }
+
   return (
     <div>
-      <Toaster />
+      <Toaster
+        position="top-right"
+        dir="auto"
+        expand={true}
+        richColors
+      />
       <div className="mb-4 sm:mb-6" role="region" aria-labelledby="custom-search-url-heading">
         <h2 id="custom-search-url-heading" className="text-xl sm:text-2xl mb-3 sm:mb-4 text-blue-500">Your Custom Search URL</h2>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -317,6 +403,56 @@ function HomeContent() {
         <div className="mt-2 space-y-2 text-sm text-gray-600">
           <p>Pro tip: Use <code className="bg-gray-100 px-1 py-0.5 rounded">!settings</code> to quickly return to this page with your custom bangs.</p>
           <p>Need help setting up? Check out our <a href="/instructions" className="text-blue-500 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">browser setup instructions</a>.</p>
+        </div>
+      </div>
+
+      {/* Add default bang selector */}
+      <div className="mb-4 sm:mb-6" role="region" aria-labelledby="default-bang-heading">
+        <h2 id="default-bang-heading" className="text-xl sm:text-2xl mb-3 sm:mb-4 text-blue-500">Default Search Engine</h2>
+        <div className="flex flex-col gap-2">
+          <p className="text-gray-600 text-sm">
+            Select which search engine to use when no bang is specified.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+            <select
+              value={defaultBang}
+              onChange={handleDefaultBangChange}
+              className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label="Select default search engine"
+            >
+              <option value="ddg">DuckDuckGo (Default)</option>
+              <optgroup label="Default Bangs">
+                {Object.entries(defaultBangs).map(([key, url]) => {
+                  const name = getBangName(key)
+                  return (
+                    <option key={key} value={key}>!{key} - {name}</option>
+                  )
+                })}
+              </optgroup>
+              {customBangs.length > 0 && (
+                <optgroup label="Custom Bangs">
+                  {customBangs.map(({ key, url }) => (
+                    <option key={key} value={key}>!{key} - {new URL(`https://${url}`).hostname}</option>
+                  ))}
+                </optgroup>
+              )}
+            </select>
+            <p className="text-sm text-gray-500">
+              Current default: <code className="bg-gray-100 px-1 py-0.5 rounded">!{defaultBang}</code>
+            </p>
+          </div>
+          {defaultBang !== 'ddg' && (
+            <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md" role="alert">
+              <div className="flex gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 mt-0.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <p className="text-sm text-yellow-700">
+                  Note: When using a non-DuckDuckGo default, unknown bangs will not fall back to DuckDuckGo's bang system.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -486,13 +622,44 @@ function HomeContent() {
 
       <div role="region" aria-labelledby="default-bangs-heading">
         <h2 id="default-bangs-heading" className="text-xl sm:text-2xl mb-3 sm:mb-4 text-blue-500">Default Bangs</h2>
-        <ul className="space-y-2" role="list" aria-label="Default bangs list">
+        <ul className="space-y-3" role="list" aria-label="Default bangs list">
           {Object.entries(defaultBangs).map(([key, url]) => {
             const isOverridden = searchParams.has(key)
+            const name = getBangName(key)
             return (
-              <li key={key} className={`${isOverridden ? "line-through text-gray-500" : ""} break-all`} role="listitem">
-                <strong>!{key}:</strong> https://{url}
-                {isOverridden && <span className="ml-2 text-red-500" role="status">(Overridden)</span>}
+              <li key={key} className={`${isOverridden ? "opacity-75" : ""} bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden`} role="listitem">
+                <div className="flex flex-col p-3">
+                  <div className="flex items-center gap-3">
+                    <code className={`${isOverridden ? "line-through" : ""} bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm border border-blue-100 font-medium min-w-[3rem] text-center`}>
+                      !{key}
+                    </code>
+                    <span className="text-gray-300 select-none">→</span>
+                    <span className={`${isOverridden ? "line-through" : ""} text-purple-700 font-medium text-lg`}>
+                      {name}
+                    </span>
+                    {isOverridden && (
+                      <span className="text-red-500 text-xs font-medium px-2 py-1 bg-red-50 rounded-md border border-red-100" role="status">
+                        Overridden
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-2 ml-[3.5rem] flex items-center gap-2">
+                    <span className="text-gray-400 text-sm font-medium">URL:</span>
+                    <code className={`${isOverridden ? "line-through" : ""} bg-gray-50 text-gray-600 px-2 py-1 rounded-md font-mono text-sm border border-gray-100 flex-1 flex items-center gap-1`}>
+                      <span>https://</span>
+                      {url.split("%s").map((part, index, array) => (
+                        <span key={index}>
+                          <span>{part}</span>
+                          {index < array.length - 1 && (
+                            <span className="px-1 py-0.5 bg-yellow-100 border border-yellow-200 rounded text-yellow-700 font-bold">
+                              %s
+                            </span>
+                          )}
+                        </span>
+                      ))}
+                    </code>
+                  </div>
+                </div>
               </li>
             )
           })}
