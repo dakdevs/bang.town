@@ -49,6 +49,7 @@ function HomeContent() {
   const [initialUrl, setInitialUrl] = useState("")
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [initialParams, setInitialParams] = useState<string>("")
+  const [editingBang, setEditingBang] = useState<{ key: string, url: string } | null>(null)
 
   // Get default bang from URL params
   const defaultBang = searchParams.get('default') || 'ddg'
@@ -576,6 +577,75 @@ function HomeContent() {
                 })
                 .map(({ key, url, isNew }) => {
                   const isDefault = key === defaultBang
+                  const isEditing = editingBang?.key === key
+
+                  if (isEditing) {
+                    return (
+                      <li key={key} className="bg-surface rounded-lg p-4 flex flex-col gap-3 border border-primary-light/10 hover:border-primary-light/30 transition-colors" role="listitem">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <div className="flex items-center gap-2 min-w-[200px]">
+                            <code className="bg-surface border-primary-light/20 px-3 py-1.5 rounded-md font-mono text-sm border font-medium min-w-[3rem] text-center text-primary">
+                              !{key}
+                            </code>
+                            <span className="text-text-light/50 select-none">→</span>
+                            <input
+                              type="text"
+                              value={editingBang.url}
+                              onChange={(e) => setEditingBang({ key, url: e.target.value.replace(/^(https?:\/\/)/, "") })}
+                              placeholder="URL (e.g., www.google.com/search?q=%s)"
+                              className="flex-1 border border-primary-light px-3 py-1.5 rounded focus:outline-none focus:ring-2 focus:ring-primary text-text"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => {
+                              if (!editingBang.url.includes("%s")) {
+                                toast.error(
+                                  "Missing search term placeholder!",
+                                  {
+                                    description: "The URL must contain %s where the search term should be inserted (e.g., example.com/search?q=%s)",
+                                    className: "bg-red-500 text-white border-red-600"
+                                  }
+                                )
+                                return
+                              }
+                              const updatedSearchParams = new URLSearchParams(searchParams.toString())
+                              updatedSearchParams.set(key, editingBang.url)
+                              router.push(`/?${updatedSearchParams.toString()}`)
+                              setEditingBang(null)
+                              toast.success(
+                                "Bang updated!",
+                                {
+                                  description: `The URL for !${key} has been updated.`,
+                                  className: "bg-primary text-white border-primary"
+                                }
+                              )
+                            }}
+                            className="text-sm px-3 py-1.5 rounded-md bg-primary text-white hover:bg-primary-dark transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center gap-1.5"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                              <polyline points="17 21 17 13 7 13 7 21" />
+                              <polyline points="7 3 7 8 15 8" />
+                            </svg>
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setEditingBang(null)}
+                            className="text-sm px-3 py-1.5 rounded-md bg-primary bg-opacity-5 text-primary hover:bg-primary hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center gap-1.5"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                            Cancel
+                          </button>
+                        </div>
+                      </li>
+                    )
+                  }
+
                   return (
                     <li key={key} className={`${isDefault ? "bg-primary bg-opacity-5" : "bg-surface"} rounded-lg p-4 flex flex-col gap-3 border border-primary-light/10 hover:border-primary-light/30 transition-colors`} role="listitem">
                       <div className="flex flex-wrap items-center gap-3">
@@ -613,6 +683,15 @@ function HomeContent() {
                         </div>
                       </div>
                       <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => setEditingBang({ key, url })}
+                          className="text-sm px-3 py-1.5 rounded-md bg-primary bg-opacity-5 text-primary hover:bg-primary hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center gap-1.5"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                          </svg>
+                          Edit
+                        </button>
                         <button
                           onClick={() => {
                             const updatedSearchParams = new URLSearchParams(searchParams.toString())
