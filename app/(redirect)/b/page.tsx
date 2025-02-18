@@ -22,7 +22,11 @@ export default function BangRedirect() {
   useEffect(() => {
     if (!isMounted) return
 
+    // If there are no search parameters at all, stay on /b/
+    if (searchParams.size === 0) return
+
     const query = searchParams.get("q")
+    // If there are parameters but no q parameter, stay on /b/
     if (!query) return
 
     const [bang, ...searchTerms] = query.split(" ")
