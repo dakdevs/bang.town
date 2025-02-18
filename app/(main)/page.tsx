@@ -8,17 +8,27 @@ import { ImportBangModal, ConfirmDialog } from "../components/ImportBangModal"
 import { defaultBangs, getBangName } from "../lib/defaultBangs"
 
 function generateBangCode(key: string, url: string) {
-  const bangConfig = { key, url }
-  return btoa(JSON.stringify(bangConfig))
+  return btoa(`${key}|${url}`)
 }
 
 function decodeBangCode(code: string) {
   try {
-    const bangConfig = JSON.parse(atob(code))
-    if (!bangConfig.key || !bangConfig.url) {
+    // First try to parse as raw key|url format
+    if (code.includes('|')) {
+      const [key, url] = code.split('|', 2)
+      if (!key || !url) {
+        throw new Error('Invalid bang configuration')
+      }
+      return { key, url }
+    }
+
+    // If not raw format, try base64 decode
+    const decoded = atob(code)
+    const [key, url] = decoded.split('|', 2)
+    if (!key || !url) {
       throw new Error('Invalid bang configuration')
     }
-    return bangConfig
+    return { key, url }
   } catch (error) {
     return null
   }
@@ -35,7 +45,7 @@ function HomeContent() {
   const [searchQuery, setSearchQuery] = useState("")
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [deleteConfirmation, setDeleteConfirmation] = useState<{ key: string } | null>(null)
-  const [initialBangs, setInitialBangs] = useState<Set<string>>(new Set())
+  const [initialUrl, setInitialUrl] = useState("")
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
   // Get default bang from URL params
@@ -85,88 +95,64 @@ function HomeContent() {
     customBangsLength: 0
   })
 
-  // Track initial bangs on first load
+  // Track initial URL on first load
   useEffect(() => {
-    const currentBangs = new Set(Array.from(searchParams.entries())
-      .filter(([key]) => key !== "q")
-      .map(([key]) => key))
-    setInitialBangs(currentBangs)
+    const currentUrl = window.location.origin
+    const params = new URLSearchParams(searchParams.toString())
+    const urlParams = params.toString().replace(/&?q=[^&]*/, "")
+    const initialFullUrl = `${currentUrl}/b/?${urlParams}&q=%s`
+    setInitialUrl(initialFullUrl)
   }, []) // Empty dependency array means this only runs once on mount
 
-  // Check for changes
-  useEffect(() => {
-    const currentBangs = new Set(Array.from(searchParams.entries())
-      .filter(([key]) => key !== "q")
-      .map(([key]) => key))
-    const currentDefault = searchParams.get('default') || 'ddg'
-    const initialDefault = Array.from(initialBangs.entries()).find(([key, value]) => key === 'default')?.[1] || 'ddg'
-
-    // Check if any bangs were added or removed, or if default bang changed
-    const hasChanges = currentBangs.size !== initialBangs.size ||
-      Array.from(currentBangs).some(bang => !initialBangs.has(bang)) ||
-      Array.from(initialBangs).some(bang => !currentBangs.has(bang)) ||
-      currentDefault !== initialDefault
-
-    setHasUnsavedChanges(hasChanges)
-
-    // Show or dismiss the persistent toast based on changes
-    if (hasChanges) {
-      const browserSettingsUrl = getBrowserSettingsUrl()
-
-      toast.message(
-        "Unsaved Changes",
-        {
-          id: "unsaved-changes",
-          duration: Infinity,
-          description: (
-            <div className="text-sm">
-              Please update your search settings in {getBrowserName()} to save your changes.
-              {browserSettingsUrl ? ' Open your search settings to update.' : (
-                <>
-                  {" "}Check our{" "}
-                  <Link
-                    href="/instructions"
-                    className="text-blue-600 hover:text-blue-700 underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                  >
-                    setup instructions
-                  </Link>
-                  {" "}for help.
-                </>
-              )}
-            </div>
-          ),
-          dismissible: false,
-          className: "bg-yellow-50 text-yellow-800 border border-yellow-200"
-        }
-      )
-    } else {
-      toast.dismiss("unsaved-changes")
-    }
-  }, [searchParams, initialBangs])
-
-  // Track initial default bang
-  useEffect(() => {
-    const initialDefault = searchParams.get('default') || 'ddg'
-    setInitialBangs(prev => {
-      const newBangs = new Set(prev)
-      newBangs.add('default')
-      return newBangs
-    })
-  }, []) // Empty dependency array means this only runs once on mount
-
-  // Update fullUrl and shareUrl to include default bang
+  // Update fullUrl and check for changes
   useEffect(() => {
     const currentUrl = window.location.origin
     const params = new URLSearchParams(searchParams.toString())
 
-    // Ensure default bang is preserved in the URL
-    if (!params.has('default')) {
-      params.set('default', 'ddg')
-    }
-
     // Remove q parameter if it exists and add placeholder
     const urlParams = params.toString().replace(/&?q=[^&]*/, "")
-    setFullUrl(`${currentUrl}/b/?${urlParams}&q=%s`)
+    const currentFullUrl = `${currentUrl}/b/?${urlParams}&q=%s`
+    setFullUrl(currentFullUrl)
+
+    // Check for changes only if initialUrl has been set
+    if (initialUrl) {
+      const hasChanges = currentFullUrl !== initialUrl
+      setHasUnsavedChanges(hasChanges)
+
+      // Show or dismiss the persistent toast based on changes
+      if (hasChanges) {
+        const browserSettingsUrl = getBrowserSettingsUrl()
+
+        toast.message(
+          "Unsaved Changes",
+          {
+            id: "unsaved-changes",
+            duration: Infinity,
+            description: (
+              <div className="text-sm">
+                <strong>Make sure to update your search settings</strong> in {getBrowserName()} to save your changes.
+                {!browserSettingsUrl && (
+                  <>
+                    {" "}Check our{" "}
+                    <Link
+                      href="/instructions"
+                      className="text-blue-600 hover:text-blue-700 underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                    >
+                      setup instructions
+                    </Link>
+                    {" "}for help.
+                  </>
+                )}
+              </div>
+            ),
+            dismissible: false,
+            className: "bg-yellow-50 text-yellow-800 border border-yellow-200"
+          }
+        )
+      } else {
+        toast.dismiss("unsaved-changes")
+      }
+    }
 
     // Generate share URL that redirects to settings with current bangs
     const customBangs = new URLSearchParams()
@@ -175,12 +161,8 @@ function HomeContent() {
         customBangs.set(key, value)
       }
     })
-    // Ensure default bang is included in share URL
-    if (!customBangs.has('default')) {
-      customBangs.set('default', 'ddg')
-    }
     setShareUrl(`${currentUrl}/b/?${customBangs.toString()}&q=!settings`)
-  }, [searchParams])
+  }, [searchParams, initialUrl])
 
   // Get custom bangs
   const customBangs = useMemo(() => {
@@ -359,8 +341,9 @@ function HomeContent() {
   }
 
   const handleShareBang = (key: string, url: string) => {
-    const code = generateBangCode(key, url)
-    navigator.clipboard.writeText(code)
+    const cleanUrl = url.replace(/^(https?:\/\/)/, "")
+    const shareText = `${key}|${cleanUrl}`
+    navigator.clipboard.writeText(shareText)
     toast.success(
       "Bang code copied!",
       {
@@ -481,7 +464,7 @@ function HomeContent() {
                   handleAddBang()
                 }
               }}
-              placeholder="URL (e.g., www.google.com/search?q=)"
+              placeholder="URL (e.g., www.google.com/search?q=%s)"
               aria-label="Bang URL"
               className="border border-gray-300 p-2 pl-16 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -550,14 +533,14 @@ function HomeContent() {
             <ul className="space-y-3" role="list" aria-label="Custom bangs list">
               {filteredBangs
                 .sort((a, b) => {
-                  const aIsNew = !initialBangs.has(a.key)
-                  const bIsNew = !initialBangs.has(b.key)
+                  const aIsNew = !initialUrl.includes(a.key)
+                  const bIsNew = !initialUrl.includes(b.key)
                   if (aIsNew && !bIsNew) return -1
                   if (!aIsNew && bIsNew) return 1
                   return 0
                 })
                 .map(({ key, url }) => {
-                  const isNew = !initialBangs.has(key)
+                  const isNew = !initialUrl.includes(key)
                   const isDefault = key === defaultBang
                   return (
                     <li key={key} className={`${isDefault ? "bg-blue-50 border-blue-200" : "bg-white border-gray-100"} rounded-lg p-2 flex flex-col gap-2`} role="listitem">
@@ -567,7 +550,7 @@ function HomeContent() {
                             !{key}
                           </code>
                           <span className="text-gray-300 select-none">→</span>
-                          <span className={`${isDefault ? "text-blue-800" : "text-purple-700"} font-medium truncate`}>
+                          <span className={`${isDefault ? "text-blue-800" : "text-purple-700"} font-medium`}>
                             {new URL(`https://${url}`).hostname}
                           </span>
                         </div>
@@ -599,7 +582,11 @@ function HomeContent() {
                         <button
                           onClick={() => {
                             const updatedSearchParams = new URLSearchParams(searchParams.toString())
-                            updatedSearchParams.set('default', key)
+                            if (key === 'ddg') {
+                              updatedSearchParams.delete('default')
+                            } else {
+                              updatedSearchParams.set('default', key)
+                            }
                             router.push(`/?${updatedSearchParams.toString()}`, { scroll: false })
                             toast.success(
                               "Default bang updated!",
@@ -677,7 +664,7 @@ function HomeContent() {
                     !{key}
                   </code>
                   <span className="text-gray-300 select-none">→</span>
-                  <span className={`${isOverridden ? "line-through" : ""} ${isDefault ? "text-blue-800" : "text-purple-700"} font-medium truncate`}>
+                  <span className={`${isOverridden ? "line-through" : ""} ${isDefault ? "text-blue-800" : "text-purple-700"} font-medium`}>
                     {name}
                   </span>
                 </div>
@@ -706,7 +693,11 @@ function HomeContent() {
                   <button
                     onClick={() => {
                       const updatedSearchParams = new URLSearchParams(searchParams.toString())
-                      updatedSearchParams.set('default', key)
+                      if (key === 'ddg') {
+                        updatedSearchParams.delete('default')
+                      } else {
+                        updatedSearchParams.set('default', key)
+                      }
                       router.push(`/?${updatedSearchParams.toString()}`, { scroll: false })
                       toast.success(
                         "Default bang updated!",

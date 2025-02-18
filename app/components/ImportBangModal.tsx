@@ -17,11 +17,22 @@ interface ConfirmDialogProps {
 
 function decodeBangCode(code: string) {
   try {
-    const bangConfig = JSON.parse(atob(code))
-    if (!bangConfig.key || !bangConfig.url) {
+    // First try to parse as raw key|url format
+    if (code.includes('|')) {
+      const [key, url] = code.split('|', 2)
+      if (!key || !url) {
+        throw new Error('Invalid bang configuration')
+      }
+      return { key, url }
+    }
+
+    // If not raw format, try base64 decode
+    const decoded = atob(code)
+    const [key, url] = decoded.split('|', 2)
+    if (!key || !url) {
       throw new Error('Invalid bang configuration')
     }
-    return bangConfig
+    return { key, url }
   } catch (error) {
     return null
   }

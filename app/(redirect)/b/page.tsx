@@ -43,9 +43,11 @@ export default function BangRedirect() {
         return
       }
 
+      // Try to find the bang URL in custom bangs first, then built-in bangs
       let bangUrl = searchParams.get(bangKey) || defaultBangs[bangKey]
 
       if (bangUrl) {
+        // Bang found, use it for the search
         if (!bangUrl.startsWith("http")) {
           bangUrl = `https://${bangUrl}`
         }
@@ -57,7 +59,7 @@ export default function BangRedirect() {
         })
         window.location.href = finalUrl
       } else {
-        // If not found in custom or default bangs, use DuckDuckGo's bang
+        // Bang not found, fallback to DuckDuckGo's bang system
         const ddgUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`
         track("bang_redirect", {
           bang: bangKey,
@@ -67,42 +69,32 @@ export default function BangRedirect() {
         window.location.href = ddgUrl
       }
     } else {
-      // If no bang is detected, use the selected default search engine
+      // No bang prefix, use the default search engine
       const defaultBang = searchParams.get('default') || 'ddg'
+      let bangUrl = searchParams.get(defaultBang) || defaultBangs[defaultBang]
 
-      if (defaultBang === 'ddg') {
-        // Use DuckDuckGo as the default search engine
+      if (!bangUrl) {
+        // Default bang not found, fallback to DuckDuckGo
         const ddgUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`
         track("bang_redirect", {
           url_template: "https://duckduckgo.com/?q=%s",
-          type: "default_search"
+          type: "default_search_fallback"
         })
         window.location.href = ddgUrl
-      } else {
-        // Use the selected default bang
-        let bangUrl = searchParams.get(defaultBang) || defaultBangs[defaultBang]
-        if (!bangUrl) {
-          // Fallback to DuckDuckGo if the default bang is not found
-          const ddgUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`
-          track("bang_redirect", {
-            url_template: "https://duckduckgo.com/?q=%s",
-            type: "default_search_fallback"
-          })
-          window.location.href = ddgUrl
-          return
-        }
-
-        if (!bangUrl.startsWith("http")) {
-          bangUrl = `https://${bangUrl}`
-        }
-        const finalUrl = bangUrl.replace("%s", encodeURIComponent(query).replace(/%20/g, "+"))
-        track("bang_redirect", {
-          bang: defaultBang,
-          url_template: bangUrl,
-          type: "default_search"
-        })
-        window.location.href = finalUrl
+        return
       }
+
+      // Use the default search engine
+      if (!bangUrl.startsWith("http")) {
+        bangUrl = `https://${bangUrl}`
+      }
+      const finalUrl = bangUrl.replace("%s", encodeURIComponent(query).replace(/%20/g, "+"))
+      track("bang_redirect", {
+        bang: defaultBang,
+        url_template: bangUrl,
+        type: "default_search"
+      })
+      window.location.href = finalUrl
     }
   }, [isMounted, searchParams])
 
