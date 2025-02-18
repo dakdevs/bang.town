@@ -173,6 +173,18 @@ function HomeContent() {
         return
       }
 
+      // Check if URL contains %s placeholder
+      if (!cleanedUrl.includes("%s")) {
+        toast.error(
+          "Missing search term placeholder!",
+          {
+            description: "The URL must contain %s where the search term should be inserted (e.g., example.com/search?q=%s)",
+            className: "bg-red-500 text-white border-red-600"
+          }
+        )
+        return
+      }
+
       // Check for duplicate bang key
       if (searchParams.has(newBangKey) || defaultBangs[newBangKey]) {
         toast.error(
