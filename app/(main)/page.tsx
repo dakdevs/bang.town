@@ -6,20 +6,22 @@ import { Toaster, toast } from "sonner"
 import { ImportBangModal, ConfirmDialog } from "../components/ImportBangModal"
 
 const defaultBangs: Record<string, string> = {
-  g: "www.google.com/search?q=",
-  w: "en.wikipedia.org/w/index.php?search=",
-  c: "chat.openai.com/?q=",
-  "4o": "chat.openai.com/?model=gpt-4&q=",
-  s: "chatgpt.com?model=gpt-4o&hints=search&q=",
-  t3: "www.t3.chat/new?q=",
-  yt: "www.youtube.com/results?search_query=",
-  gh: "github.com/search?q=",
-  so: "stackoverflow.com/search?q=",
-  a: "www.amazon.com/s?k=",
-  r: "www.reddit.com/search/?q=",
-  x: "x.com/search?q=",
-  imdb: "www.imdb.com/find?q=",
-  map: "www.google.com/maps?q=",
+  c: "chat.openai.com/?q=%s",
+  "4o": "chat.openai.com/?model=gpt-4&q=%s",
+  s: "chatgpt.com?model=gpt-4o&hints=search&q=%s",
+  t3: "www.t3.chat/new?q=%s",
+  w: "en.wikipedia.org/w/index.php?search=%s",
+  yt: "www.youtube.com/results?search_query=%s",
+  gh: "github.com/search?q=%s",
+  so: "stackoverflow.com/search?q=%s",
+  a: "www.amazon.com/s?k=%s",
+  r: "www.reddit.com/search/?q=%s",
+  x: "x.com/search?q=%s",
+  imdb: "www.imdb.com/find?q=%s",
+  map: "www.google.com/maps?q=%s",
+  g: "www.google.com/search?q=%s",
+  ddg: "duckduckgo.com/?q=%s",
+  pp: "perplexity.ai/?q=%s",
 }
 
 function generateBangCode(key: string, url: string) {
@@ -41,12 +43,11 @@ function decodeBangCode(code: string) {
 
 function getBangName(key: string): string {
   const names: Record<string, string> = {
-    g: "Google Search",
-    w: "Wikipedia",
     c: "ChatGPT",
     "4o": "ChatGPT with GPT-4",
     s: "ChatGPT Search with GPT-4",
     t3: "T3 Chat",
+    w: "Wikipedia",
     yt: "YouTube",
     gh: "GitHub",
     so: "Stack Overflow",
@@ -55,6 +56,9 @@ function getBangName(key: string): string {
     x: "X (Twitter)",
     imdb: "IMDb",
     map: "Google Maps",
+    g: "Google Search",
+    ddg: "DuckDuckGo",
+    pp: "Perplexity AI",
   }
   return names[key] || key
 }
@@ -233,7 +237,7 @@ function HomeContent() {
           `The bang !${newBangKey} with this URL already exists!`,
           {
             description: existingDefaultUrl === cleanedUrl
-              ? "This exact bang is already available as a default bang."
+              ? "This exact bang is already available as a built-in bang."
               : "You already have this exact custom bang.",
             className: "bg-red-500 text-white border-red-600"
           }
@@ -253,12 +257,12 @@ function HomeContent() {
         return
       }
 
-      // If overriding a default bang, show warning toast
+      // If overriding a built-in bang, show warning toast
       if (defaultBangs[newBangKey]) {
         toast.warning(
-          `Overriding default bang !${newBangKey}`,
+          `Overriding built-in bang !${newBangKey}`,
           {
-            description: "Your custom bang will take precedence over the default bang.",
+            description: "Your custom bang will take precedence over the built-in bang.",
             className: "bg-yellow-500 text-white border-yellow-600"
           }
         )
@@ -333,22 +337,6 @@ function HomeContent() {
     )
   }, [customBangs, searchQuery])
 
-  // Handle default bang change
-  const handleDefaultBangChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newDefaultBang = e.target.value
-    const updatedSearchParams = new URLSearchParams(searchParams.toString())
-    updatedSearchParams.set('default', newDefaultBang)
-    router.push(`/?${updatedSearchParams.toString()}`)
-
-    toast.success(
-      "Default bang updated!",
-      {
-        description: `Searches without a bang will now use !${newDefaultBang}`,
-        className: "bg-green-500 text-white border-green-600"
-      }
-    )
-  }
-
   return (
     <div>
       <Toaster
@@ -382,8 +370,12 @@ function HomeContent() {
                 )
               }}
               aria-label="Copy custom search URL to clipboard"
-              className="flex-1 sm:flex-none bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-2"
+              className="flex-1 sm:flex-none bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-2 flex items-center justify-center gap-2"
             >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
               Copy
             </button>
             <button
@@ -403,56 +395,6 @@ function HomeContent() {
         <div className="mt-2 space-y-2 text-sm text-gray-600">
           <p>Pro tip: Use <code className="bg-gray-100 px-1 py-0.5 rounded">!settings</code> to quickly return to this page with your custom bangs.</p>
           <p>Need help setting up? Check out our <a href="/instructions" className="text-blue-500 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">browser setup instructions</a>.</p>
-        </div>
-      </div>
-
-      {/* Add default bang selector */}
-      <div className="mb-4 sm:mb-6" role="region" aria-labelledby="default-bang-heading">
-        <h2 id="default-bang-heading" className="text-xl sm:text-2xl mb-3 sm:mb-4 text-blue-500">Default Search Engine</h2>
-        <div className="flex flex-col gap-2">
-          <p className="text-gray-600 text-sm">
-            Select which search engine to use when no bang is specified.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-            <select
-              value={defaultBang}
-              onChange={handleDefaultBangChange}
-              className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-label="Select default search engine"
-            >
-              <option value="ddg">DuckDuckGo (Default)</option>
-              <optgroup label="Default Bangs">
-                {Object.entries(defaultBangs).map(([key, url]) => {
-                  const name = getBangName(key)
-                  return (
-                    <option key={key} value={key}>!{key} - {name}</option>
-                  )
-                })}
-              </optgroup>
-              {customBangs.length > 0 && (
-                <optgroup label="Custom Bangs">
-                  {customBangs.map(({ key, url }) => (
-                    <option key={key} value={key}>!{key} - {new URL(`https://${url}`).hostname}</option>
-                  ))}
-                </optgroup>
-              )}
-            </select>
-            <p className="text-sm text-gray-500">
-              Current default: <code className="bg-gray-100 px-1 py-0.5 rounded">!{defaultBang}</code>
-            </p>
-          </div>
-          {defaultBang !== 'ddg' && (
-            <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md" role="alert">
-              <div className="flex gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 mt-0.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-                <p className="text-sm text-yellow-700">
-                  Note: When using a non-DuckDuckGo default, unknown bangs will not fall back to DuckDuckGo's bang system.
-                </p>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -495,7 +437,7 @@ function HomeContent() {
                   handleAddBang()
                 }
               }}
-              placeholder="URL (e.g., www.google.com/search?q=%s)"
+              placeholder="URL (e.g., www.google.com/search?q=)"
               aria-label="Bang URL"
               className="border border-gray-300 p-2 pl-16 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -511,12 +453,12 @@ function HomeContent() {
       </div>
 
       <div className="mb-4 sm:mb-6" role="region" aria-labelledby="custom-bangs-heading">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mb-3 sm:mb-4">
-          <h2 id="custom-bangs-heading" className="text-xl sm:text-2xl text-blue-500">Custom Bangs</h2>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mb-3 sm:mb-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white p-4 rounded-lg">
+          <h2 id="custom-bangs-heading" className="text-xl sm:text-2xl text-white">Custom Bangs</h2>
           <button
             onClick={() => setIsImportModalOpen(true)}
             aria-label="Import bang configuration"
-            className="w-full sm:w-auto bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-2"
+            className="w-full sm:w-auto bg-white text-blue-600 px-4 py-2 rounded hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-500"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -574,7 +516,7 @@ function HomeContent() {
                 </p>
               </div>
             )}
-            <ul className="space-y-2" role="list" aria-label="Custom bangs list">
+            <ul className="space-y-3" role="list" aria-label="Custom bangs list">
               {filteredBangs
                 .sort((a, b) => {
                   const aIsNew = !initialBangs.has(a.key)
@@ -585,27 +527,97 @@ function HomeContent() {
                 })
                 .map(({ key, url }) => {
                   const isNew = !initialBangs.has(key)
+                  const isDefault = key === defaultBang
                   return (
-                    <li key={key} className={`flex flex-col sm:flex-row justify-between items-start sm:items-center p-2 rounded gap-2 ${isNew ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'}`} role="listitem">
-                      <span className="break-all">
-                        <strong className="text-blue-500">!{key}:</strong> https://{url}
-                        {isNew && <span className="ml-2 text-blue-600 text-sm" role="status">(New)</span>}
-                      </span>
-                      <div className="flex gap-2 w-full sm:w-auto" role="group" aria-label={`Actions for !${key}`}>
-                        <button
-                          onClick={() => handleShareBang(key, url)}
-                          aria-label={`Share !${key} bang configuration`}
-                          className="flex-1 sm:flex-none bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-2"
-                        >
-                          Share
-                        </button>
-                        <button
-                          onClick={() => handleDeleteBang(key)}
-                          aria-label={`Delete !${key} bang`}
-                          className="flex-1 sm:flex-none bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-offset-2"
-                        >
-                          Delete
-                        </button>
+                    <li key={key} className={`${isDefault ? "bg-blue-50 border-blue-200" : "bg-white border-gray-100"} rounded-lg shadow-sm border overflow-hidden transition-colors`} role="listitem">
+                      <div className="flex flex-col p-3">
+                        <div className="flex items-center gap-3">
+                          <code className={`${isDefault ? "bg-blue-100 border-blue-200 text-blue-800" : "bg-blue-50 border-blue-100 text-blue-700"} px-2 py-1 rounded-md font-mono text-sm border font-medium min-w-[3rem] text-center`}>
+                            !{key}
+                          </code>
+                          <span className="text-gray-300 select-none">→</span>
+                          <span className={`${isDefault ? "text-blue-800" : "text-purple-700"} font-medium text-lg`}>
+                            {new URL(`https://${url}`).hostname}
+                          </span>
+                          {isNew && (
+                            <span className="text-blue-600 text-xs font-medium px-2 py-1 bg-blue-50 rounded-md border border-blue-200" role="status">
+                              New
+                            </span>
+                          )}
+                          {isDefault && (
+                            <span className="text-blue-600 text-xs font-medium px-2 py-1 bg-blue-50 rounded-md border border-blue-200" role="status">
+                              Default
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-2 ml-[3.5rem] flex items-center gap-2">
+                          <span className="text-gray-400 text-sm font-medium">URL:</span>
+                          <code className={`${isDefault ? "bg-blue-50 border-blue-100" : "bg-gray-50 border-gray-100"} text-gray-600 px-2 py-1 rounded-md font-mono text-sm border flex-1 flex items-center gap-1 overflow-x-auto`}>
+                            <span>https://</span>
+                            {url.split("%s").map((part, index, array) => (
+                              <span key={index}>
+                                <span>{part}</span>
+                                {index < array.length - 1 && (
+                                  <span className="px-1.5 py-0.5 bg-yellow-100 border border-yellow-300 rounded text-yellow-800 font-bold mx-0.5">
+                                    %s
+                                  </span>
+                                )}
+                              </span>
+                            ))}
+                          </code>
+                        </div>
+                        <div className="mt-3 ml-[3.5rem] flex gap-2">
+                          <button
+                            onClick={() => {
+                              const updatedSearchParams = new URLSearchParams(searchParams.toString())
+                              updatedSearchParams.set('default', key)
+                              router.push(`/?${updatedSearchParams.toString()}`)
+                              toast.success(
+                                "Default bang updated!",
+                                {
+                                  description: `Searches without a bang will now use !${key}`,
+                                  className: "bg-green-500 text-white border-green-600"
+                                }
+                              )
+                            }}
+                            disabled={isDefault}
+                            className={`text-sm px-3 py-1 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center gap-1.5 ${isDefault
+                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                              : "bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-blue-500"
+                              }`}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                            </svg>
+                            {isDefault ? "Default" : "Set Default"}
+                          </button>
+                          <button
+                            onClick={() => handleShareBang(key, url)}
+                            className="text-sm px-3 py-1 rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center gap-1.5"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="18" cy="5" r="3" />
+                              <circle cx="6" cy="12" r="3" />
+                              <circle cx="18" cy="19" r="3" />
+                              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                            </svg>
+                            Share
+                          </button>
+                          <button
+                            onClick={() => handleDeleteBang(key)}
+                            className="text-sm px-3 py-1 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center gap-1.5"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M3 6h18" />
+                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                              <line x1="10" y1="11" x2="10" y2="17" />
+                              <line x1="14" y1="11" x2="14" y2="17" />
+                            </svg>
+                            Delete
+                          </button>
+                        </div>
                       </div>
                     </li>
                   )
@@ -621,20 +633,24 @@ function HomeContent() {
       </div>
 
       <div role="region" aria-labelledby="default-bangs-heading">
-        <h2 id="default-bangs-heading" className="text-xl sm:text-2xl mb-3 sm:mb-4 text-blue-500">Default Bangs</h2>
-        <ul className="space-y-3" role="list" aria-label="Default bangs list">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mb-3 sm:mb-4 bg-gradient-to-r from-gray-600 to-gray-700 text-white p-4 rounded-lg">
+          <h2 id="builtin-bangs-heading" className="text-xl sm:text-2xl text-white">Built-in Bangs</h2>
+          <p className="text-sm text-gray-200">These are the built-in bangs that come with bang.town</p>
+        </div>
+        <ul className="space-y-3" role="list" aria-label="Built-in bangs list">
           {Object.entries(defaultBangs).map(([key, url]) => {
             const isOverridden = searchParams.has(key)
             const name = getBangName(key)
+            const isDefault = key === defaultBang
             return (
-              <li key={key} className={`${isOverridden ? "opacity-75" : ""} bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden`} role="listitem">
+              <li key={key} className={`${isOverridden ? "opacity-75" : ""} ${isDefault ? "bg-blue-50 border-blue-200" : "bg-white border-gray-100"} rounded-lg shadow-sm border overflow-hidden transition-colors`} role="listitem">
                 <div className="flex flex-col p-3">
                   <div className="flex items-center gap-3">
-                    <code className={`${isOverridden ? "line-through" : ""} bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-mono text-sm border border-blue-100 font-medium min-w-[3rem] text-center`}>
+                    <code className={`${isOverridden ? "line-through" : ""} ${isDefault ? "bg-blue-100 border-blue-200 text-blue-800" : "bg-blue-50 border-blue-100 text-blue-700"} px-2 py-1 rounded-md font-mono text-sm border font-medium min-w-[3rem] text-center`}>
                       !{key}
                     </code>
                     <span className="text-gray-300 select-none">→</span>
-                    <span className={`${isOverridden ? "line-through" : ""} text-purple-700 font-medium text-lg`}>
+                    <span className={`${isOverridden ? "line-through" : ""} ${isDefault ? "text-blue-800" : "text-purple-700"} font-medium text-lg`}>
                       {name}
                     </span>
                     {isOverridden && (
@@ -642,22 +658,53 @@ function HomeContent() {
                         Overridden
                       </span>
                     )}
+                    {isDefault && (
+                      <span className="text-blue-600 text-xs font-medium px-2 py-1 bg-blue-50 rounded-md border border-blue-200" role="status">
+                        Default
+                      </span>
+                    )}
                   </div>
                   <div className="mt-2 ml-[3.5rem] flex items-center gap-2">
                     <span className="text-gray-400 text-sm font-medium">URL:</span>
-                    <code className={`${isOverridden ? "line-through" : ""} bg-gray-50 text-gray-600 px-2 py-1 rounded-md font-mono text-sm border border-gray-100 flex-1 flex items-center gap-1`}>
+                    <code className={`${isOverridden ? "line-through" : ""} ${isDefault ? "bg-blue-50 border-blue-100" : "bg-gray-50 border-gray-100"} text-gray-600 px-2 py-1 rounded-md font-mono text-sm border flex-1 flex items-center gap-1 overflow-x-auto`}>
                       <span>https://</span>
                       {url.split("%s").map((part, index, array) => (
                         <span key={index}>
                           <span>{part}</span>
                           {index < array.length - 1 && (
-                            <span className="px-1 py-0.5 bg-yellow-100 border border-yellow-200 rounded text-yellow-700 font-bold">
+                            <span className="px-1.5 py-0.5 bg-yellow-100 border border-yellow-300 rounded text-yellow-800 font-bold mx-0.5">
                               %s
                             </span>
                           )}
                         </span>
                       ))}
                     </code>
+                  </div>
+                  <div className="mt-3 ml-[3.5rem] flex gap-2">
+                    <button
+                      onClick={() => {
+                        const updatedSearchParams = new URLSearchParams(searchParams.toString())
+                        updatedSearchParams.set('default', key)
+                        router.push(`/?${updatedSearchParams.toString()}`)
+                        toast.success(
+                          "Default bang updated!",
+                          {
+                            description: `Searches without a bang will now use !${key}`,
+                            className: "bg-green-500 text-white border-green-600"
+                          }
+                        )
+                      }}
+                      disabled={isDefault}
+                      className={`text-sm px-3 py-1 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center gap-1.5 ${isDefault
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-blue-500"
+                        }`}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                      </svg>
+                      {isDefault ? "Default" : "Set Default"}
+                    </button>
                   </div>
                 </div>
               </li>
@@ -675,7 +722,7 @@ function HomeContent() {
                   `The bang !${key} already exists!`,
                   {
                     description: defaultBangs[key]
-                      ? "This is a default bang - try a different key."
+                      ? "This is a built-in bang - try a different key."
                       : "You already have a custom bang with this key.",
                     className: "bg-red-500 text-white border-red-600"
                   }
