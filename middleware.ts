@@ -28,13 +28,13 @@ export function middleware(request: NextRequest) {
   response.headers.set('Timing-Allow-Origin', '*')
   response.headers.set('Server-Timing', 'edge;desc="Vercel Edge Network"')
 
-  // Enable HTTP/2 Server Push for critical assets
-  const pushHeaders = [
-    '</fonts/bangers.woff2>; rel=preload; as=font; crossorigin=anonymous',
-    '</favicon.ico>; rel=preload; as=image',
-    '</icon.png>; rel=preload; as=image'
+  // Enable preloading for critical assets with correct 'as' values
+  const preloadHeaders = [
+    '</fonts/bangers.woff2>; rel=preload; as=font; type=font/woff2; crossorigin=anonymous',
+    '</favicon.ico>; rel=icon; as=image; type=image/x-icon',
+    '</icon.png>; rel=icon; as=image; type=image/png'
   ]
-  response.headers.set('Link', pushHeaders.join(', '))
+  response.headers.set('Link', preloadHeaders.join(', '))
 
   // Security Headers
   const headers = response.headers
@@ -85,17 +85,16 @@ export function middleware(request: NextRequest) {
   // Enhanced Content Security Policy
   const cspDirectives = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' vercel.live *.vercel.app",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' vercel.live *.vercel.app blob:",
     "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
     "img-src 'self' data: blob: *.vercel.app",
-    "font-src 'self' fonts.gstatic.com",
+    "font-src 'self' fonts.gstatic.com data:",
     "frame-src 'self'",
     "connect-src 'self' *.vercel.app vitals.vercel-insights.com",
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",
-    "object-src 'none'",
-    "require-trusted-types-for 'script'"
+    "object-src 'none'"
   ]
 
   // Add upgrade-insecure-requests only in production
