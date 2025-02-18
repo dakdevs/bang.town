@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export const runtime = 'edge'
+export const runtime = 'experimental-edge'
 
 export function middleware(request: NextRequest) {
   // Get the response
@@ -12,17 +12,29 @@ export function middleware(request: NextRequest) {
     response.headers.set('Cache-Control', 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800')
     response.headers.set('CDN-Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800')
     response.headers.set('Vercel-CDN-Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800')
+    response.headers.set('Surrogate-Control', 'public, max-age=86400, stale-while-revalidate=604800')
   } else {
     // Default caching strategy for other routes
     response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=3600')
     response.headers.set('CDN-Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=3600')
     response.headers.set('Vercel-CDN-Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=3600')
+    response.headers.set('Surrogate-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=3600')
   }
 
   // Performance headers
   response.headers.set('x-edge-region', process.env.VERCEL_REGION || '')
   response.headers.set('x-middleware-cache', 'yes')
-  response.headers.set('Accept-CH', 'Sec-CH-Prefers-Color-Scheme')
+  response.headers.set('Accept-CH', 'Sec-CH-Prefers-Color-Scheme, Viewport-Width, Width')
+  response.headers.set('Timing-Allow-Origin', '*')
+  response.headers.set('Server-Timing', 'edge;desc="Vercel Edge Network"')
+
+  // Enable HTTP/2 Server Push for critical assets
+  const pushHeaders = [
+    '</fonts/bangers.woff2>; rel=preload; as=font; crossorigin=anonymous',
+    '</favicon.ico>; rel=preload; as=image',
+    '</icon.png>; rel=preload; as=image'
+  ]
+  response.headers.set('Link', pushHeaders.join(', '))
 
   // Security Headers
   const headers = response.headers
@@ -36,25 +48,67 @@ export function middleware(request: NextRequest) {
   // Control iframe embedding
   headers.set('X-Frame-Options', 'DENY')
 
-  // Control browser features and APIs
+  // Enhanced Permissions Policy
   headers.set(
     'Permissions-Policy',
-    'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()'
+    [
+      'accelerometer=()',
+      'ambient-light-sensor=()',
+      'autoplay=()',
+      'battery=()',
+      'camera=()',
+      'cross-origin-isolated=()',
+      'display-capture=()',
+      'document-domain=()',
+      'encrypted-media=()',
+      'execution-while-not-rendered=()',
+      'execution-while-out-of-viewport=()',
+      'fullscreen=(self)',
+      'geolocation=()',
+      'gyroscope=()',
+      'keyboard-map=()',
+      'magnetometer=()',
+      'microphone=()',
+      'midi=()',
+      'navigation-override=()',
+      'payment=()',
+      'picture-in-picture=()',
+      'publickey-credentials-get=()',
+      'screen-wake-lock=()',
+      'sync-xhr=()',
+      'usb=()',
+      'web-share=()',
+      'xr-spatial-tracking=()'
+    ].join(', ')
   )
 
-  // Content Security Policy with nonce support for better caching
-  headers.set(
-    'Content-Security-Policy',
-    [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' vercel.live *.vercel.app",
-      "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
-      "img-src 'self' data: blob: *.vercel.app",
-      "font-src 'self' fonts.gstatic.com",
-      "frame-src 'self'",
-      "connect-src 'self' *.vercel.app vitals.vercel-insights.com",
-    ].join('; ')
-  )
+  // Enhanced Content Security Policy
+  const cspDirectives = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' vercel.live *.vercel.app",
+    "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
+    "img-src 'self' data: blob: *.vercel.app",
+    "font-src 'self' fonts.gstatic.com",
+    "frame-src 'self'",
+    "connect-src 'self' *.vercel.app vitals.vercel-insights.com",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "object-src 'none'",
+    "require-trusted-types-for 'script'"
+  ]
+
+  // Add upgrade-insecure-requests only in production
+  if (process.env.NODE_ENV === 'production') {
+    cspDirectives.push("upgrade-insecure-requests")
+  }
+
+  headers.set('Content-Security-Policy', cspDirectives.join('; '))
+
+  // Cross-Origin headers
+  headers.set('Cross-Origin-Opener-Policy', 'same-origin')
+  headers.set('Cross-Origin-Embedder-Policy', 'require-corp')
+  headers.set('Cross-Origin-Resource-Policy', 'same-origin')
 
   // Strict Transport Security (HSTS)
   if (process.env.NODE_ENV === 'production') {
@@ -67,8 +121,11 @@ export function middleware(request: NextRequest) {
   // Referrer Policy
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
 
-  // Early Hints for better performance
-  headers.set('Link', '</fonts/bangers.woff2>; rel=preload; as=font; crossorigin=anonymous')
+  // NEL (Network Error Logging) and Report-To for monitoring
+  if (process.env.NODE_ENV === 'production') {
+    headers.set('NEL', '{"report_to":"default","max_age":31536000,"include_subdomains":true}')
+    headers.set('Report-To', '{"group":"default","max_age":31536000,"endpoints":[{"url":"https://bang.town/api/nel"}]}')
+  }
 
   return response
 }
