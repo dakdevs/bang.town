@@ -1,7 +1,6 @@
 export const defaultBangs: Record<string, string> = {
-  c: "chat.openai.com?q=%s",
-  "4o": "chat.openai.com?model=gpt-4&q=%s",
   s: "chat.openai.com?model=gpt-4o&hints=search&q=%s",
+  "4o": "chat.openai.com?model=gpt-4&q=%s",
   t3: "www.t3.chat/new?q=%s",
   w: "en.wikipedia.org/w/index.php?search=%s",
   yt: "www.youtube.com/results?search_query=%s",
@@ -19,9 +18,8 @@ export const defaultBangs: Record<string, string> = {
 
 export function getBangName(key: string): string {
   const names: Record<string, string> = {
-    c: "ChatGPT",
-    "4o": "ChatGPT with GPT-4",
     s: "ChatGPT Search with GPT-4",
+    "4o": "ChatGPT with GPT-4",
     t3: "T3 Chat",
     w: "Wikipedia",
     yt: "YouTube",
