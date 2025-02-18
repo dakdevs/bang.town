@@ -271,43 +271,45 @@ function HomeContent() {
   return (
     <div>
       <Toaster />
-      <div className="mb-6">
-        <h2 className="text-2xl mb-4 text-blue-500">Your Custom Search URL</h2>
-        <div className="flex items-center gap-2">
+      <div className="mb-4 sm:mb-6">
+        <h2 className="text-xl sm:text-2xl mb-3 sm:mb-4 text-blue-500">Your Custom Search URL</h2>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <input
             id="custom-search-url"
             type="text"
             value={fullUrl}
             readOnly
-            className="bg-gray-100 p-2 rounded text-sm flex-grow h-10 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bg-gray-100 p-2 rounded text-sm flex-grow h-10 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-x-auto"
             onClick={(e) => e.currentTarget.select()}
           />
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(fullUrl)
-              toast.success(
-                "URL copied!",
-                {
-                  description: "Your custom search URL has been copied to your clipboard.",
-                  className: "bg-green-500 text-white border-green-600"
-                }
-              )
-            }}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors whitespace-nowrap"
-          >
-            Copy
-          </button>
-          <button
-            onClick={handleShare}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors flex items-center gap-2 whitespace-nowrap"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-              <polyline points="16 6 12 2 8 6" />
-              <line x1="12" y1="2" x2="12" y2="15" />
-            </svg>
-            Share
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(fullUrl)
+                toast.success(
+                  "URL copied!",
+                  {
+                    description: "Your custom search URL has been copied to your clipboard.",
+                    className: "bg-green-500 text-white border-green-600"
+                  }
+                )
+              }}
+              className="flex-1 sm:flex-none bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors whitespace-nowrap"
+            >
+              Copy
+            </button>
+            <button
+              onClick={handleShare}
+              className="flex-1 sm:flex-none bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                <polyline points="16 6 12 2 8 6" />
+                <line x1="12" y1="2" x2="12" y2="15" />
+              </svg>
+              Share
+            </button>
+          </div>
         </div>
         <div className="mt-2 space-y-2 text-sm text-gray-600">
           <p>Pro tip: Use <code className="bg-gray-100 px-1 py-0.5 rounded">!settings</code> to quickly return to this page with your custom bangs.</p>
@@ -315,10 +317,10 @@ function HomeContent() {
         </div>
       </div>
 
-      <div className="mb-6">
-        <h2 className="text-2xl mb-4 text-blue-500">Add Custom Bang</h2>
-        <div className="flex gap-2">
-          <div className="relative w-1/4">
+      <div className="mb-4 sm:mb-6">
+        <h2 className="text-xl sm:text-2xl mb-3 sm:mb-4 text-blue-500">Add Custom Bang</h2>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative w-full sm:w-1/4">
             <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500">!</span>
             <input
               type="text"
@@ -359,19 +361,19 @@ function HomeContent() {
           </div>
           <button
             onClick={handleAddBang}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+            className="w-full sm:w-auto bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
           >
             Add
           </button>
         </div>
       </div>
 
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl text-blue-500">Custom Bangs</h2>
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mb-3 sm:mb-4">
+          <h2 className="text-xl sm:text-2xl text-blue-500">Custom Bangs</h2>
           <button
             onClick={() => setIsImportModalOpen(true)}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors flex items-center gap-2"
+            className="w-full sm:w-auto bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -381,6 +383,7 @@ function HomeContent() {
             Import Bang
           </button>
         </div>
+
         {hasUnsavedChanges && (
           <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <div className="flex items-start gap-2">
@@ -438,21 +441,21 @@ function HomeContent() {
                 .map(({ key, url }) => {
                   const isNew = !initialBangs.has(key)
                   return (
-                    <li key={key} className={`flex justify-between items-center p-2 rounded ${isNew ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'}`}>
-                      <span>
+                    <li key={key} className={`flex flex-col sm:flex-row justify-between items-start sm:items-center p-2 rounded gap-2 ${isNew ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'}`}>
+                      <span className="break-all">
                         <strong className="text-blue-500">!{key}:</strong> https://{url}
                         {isNew && <span className="ml-2 text-blue-600 text-sm">(New)</span>}
                       </span>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 w-full sm:w-auto">
                         <button
                           onClick={() => handleShareBang(key, url)}
-                          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                          className="flex-1 sm:flex-none bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
                         >
                           Share
                         </button>
                         <button
                           onClick={() => handleDeleteBang(key)}
-                          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+                          className="flex-1 sm:flex-none bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
                         >
                           Delete
                         </button>
@@ -471,12 +474,12 @@ function HomeContent() {
       </div>
 
       <div>
-        <h2 className="text-2xl mb-4 text-blue-500">Default Bangs</h2>
+        <h2 className="text-xl sm:text-2xl mb-3 sm:mb-4 text-blue-500">Default Bangs</h2>
         <ul className="space-y-2">
           {Object.entries(defaultBangs).map(([key, url]) => {
             const isOverridden = searchParams.has(key)
             return (
-              <li key={key} className={`${isOverridden ? "line-through text-gray-500" : ""}`}>
+              <li key={key} className={`${isOverridden ? "line-through text-gray-500" : ""} break-all`}>
                 <strong>!{key}:</strong> https://{url}
                 {isOverridden && <span className="ml-2 text-red-500">(Overridden)</span>}
               </li>
