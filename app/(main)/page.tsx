@@ -521,7 +521,7 @@ function HomeContent() {
         <h2 id="add-bang-heading" className="text-xl sm:text-2xl mb-3 sm:mb-4 text-primary">Add Custom Bang</h2>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+        <div className="flex flex-wrap gap-2 mb-4">
           <button
             onClick={() => setActiveTab('custom')}
             className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === 'custom'
@@ -600,7 +600,7 @@ function HomeContent() {
                       type="text"
                       value={newBangKey}
                       onChange={(e) => setNewBangKey(e.target.value)}
-                      placeholder="Bang key (e.g., g)"
+                      placeholder="g"
                       aria-label="Bang key"
                       className="w-full border border-primary-light pl-6 pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                       autoFocus
@@ -630,7 +630,7 @@ function HomeContent() {
                           handleAddBang()
                         }
                       }}
-                      placeholder="URL (e.g., www.google.com/search?q=%s)"
+                      placeholder="www.google.com/search?q=%s"
                       aria-label="Bang URL"
                       className="w-full border border-primary-light pl-[4.5rem] pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                     />
@@ -663,7 +663,7 @@ function HomeContent() {
                       type="text"
                       value={newBangKey}
                       onChange={(e) => setNewBangKey(e.target.value)}
-                      placeholder="Bang key (e.g., mkbhd)"
+                      placeholder="mkbhd"
                       aria-label="Bang key"
                       className="w-full border border-primary-light pl-6 pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                       autoFocus
@@ -690,12 +690,15 @@ function HomeContent() {
                           e.preventDefault()
                           if (newBangKey && newBangUrl) {
                             const url = generateYouTubeChannelSearchUrl(newBangUrl)
-                            setNewBangUrl(url)
-                            handleAddBang()
+                            const updatedSearchParams = new URLSearchParams(searchParams.toString())
+                            updatedSearchParams.set(newBangKey, url)
+                            router.push(`/?${updatedSearchParams.toString()}`)
+                            setNewBangKey("")
+                            setNewBangUrl("")
                           }
                         }
                       }}
-                      placeholder="YOUTUBE USERNAME (E.G., MKBHD)"
+                      placeholder="MKBHD"
                       aria-label="YouTube username"
                       className="w-full border border-primary-light pl-8 pr-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-light/50 uppercase"
                     />
@@ -705,8 +708,11 @@ function HomeContent() {
                   onClick={() => {
                     if (newBangKey && newBangUrl) {
                       const url = generateYouTubeChannelSearchUrl(newBangUrl)
-                      setNewBangUrl(url)
-                      handleAddBang()
+                      const updatedSearchParams = new URLSearchParams(searchParams.toString())
+                      updatedSearchParams.set(newBangKey, url)
+                      router.push(`/?${updatedSearchParams.toString()}`)
+                      setNewBangKey("")
+                      setNewBangUrl("")
                     }
                   }}
                   aria-label="Add YouTube channel search bang"
@@ -764,8 +770,11 @@ function HomeContent() {
                           e.preventDefault()
                           if (newBangKey && newBangUrl) {
                             const url = generateTwitterSearchUrl(newBangUrl)
-                            setNewBangUrl(url)
-                            handleAddBang()
+                            const updatedSearchParams = new URLSearchParams(searchParams.toString())
+                            updatedSearchParams.set(newBangKey, url)
+                            router.push(`/?${updatedSearchParams.toString()}`)
+                            setNewBangKey("")
+                            setNewBangUrl("")
                           }
                         }
                       }}
@@ -779,8 +788,11 @@ function HomeContent() {
                   onClick={() => {
                     if (newBangKey && newBangUrl) {
                       const url = generateTwitterSearchUrl(newBangUrl)
-                      setNewBangUrl(url)
-                      handleAddBang()
+                      const updatedSearchParams = new URLSearchParams(searchParams.toString())
+                      updatedSearchParams.set(newBangKey, url)
+                      router.push(`/?${updatedSearchParams.toString()}`)
+                      setNewBangKey("")
+                      setNewBangUrl("")
                     }
                   }}
                   aria-label="Add Twitter user search bang"
@@ -803,17 +815,17 @@ function HomeContent() {
               <p className="text-text-light text-sm">
                 Create a bang to search Vercel logs for a specific project. Enter your team and project slugs, and choose which log levels to include.
               </p>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row gap-2">
                   <div className="relative w-full sm:w-1/4">
-                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-text-light" aria-hidden="true">!</span>
+                    <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-text-light" aria-hidden="true">!</span>
                     <input
                       type="text"
                       value={newBangKey}
                       onChange={(e) => setNewBangKey(e.target.value)}
                       placeholder="vl"
                       aria-label="Bang key"
-                      className="w-full border border-primary-light pl-8 pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full border border-primary-light pl-6 pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                       autoFocus
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -823,56 +835,52 @@ function HomeContent() {
                       }}
                     />
                   </div>
-                  <div className="flex-grow space-y-2">
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <div className="relative flex-1">
-                        <input
-                          id="vercel-team-input"
-                          type="text"
-                          value={newBangUrl}
-                          onChange={(e) => setNewBangUrl(e.target.value)}
-                          placeholder="TEAM SLUG"
-                          aria-label="Vercel team slug"
-                          className="w-full border border-primary-light px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-light/50 uppercase"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault()
-                              document.getElementById('vercel-project-input')?.focus()
-                            }
-                          }}
-                        />
-                      </div>
-                      <div className="relative flex-1">
-                        <input
-                          id="vercel-project-input"
-                          type="text"
-                          placeholder="PROJECT SLUG"
-                          aria-label="Vercel project slug"
-                          className="w-full border border-primary-light px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-light/50 uppercase"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <label className="flex items-center gap-2 text-sm text-text-light">
-                        <input
-                          type="checkbox"
-                          checked={vercelLevels.error}
-                          onChange={(e) => setVercelLevels(prev => ({ ...prev, error: e.target.checked }))}
-                          className="rounded border-primary-light text-primary focus:ring-primary"
-                        />
-                        Error
-                      </label>
-                      <label className="flex items-center gap-2 text-sm text-text-light">
-                        <input
-                          type="checkbox"
-                          checked={vercelLevels.warning}
-                          onChange={(e) => setVercelLevels(prev => ({ ...prev, warning: e.target.checked }))}
-                          className="rounded border-primary-light text-primary focus:ring-primary"
-                        />
-                        Warning
-                      </label>
-                    </div>
+                  <div className="relative flex-1">
+                    <input
+                      id="vercel-team-input"
+                      type="text"
+                      value={newBangUrl}
+                      onChange={(e) => setNewBangUrl(e.target.value)}
+                      placeholder="TEAM SLUG"
+                      aria-label="Vercel team slug"
+                      className="w-full border border-primary-light px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-light/50 uppercase"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          document.getElementById('vercel-project-input')?.focus()
+                        }
+                      }}
+                    />
                   </div>
+                  <div className="relative flex-1">
+                    <input
+                      id="vercel-project-input"
+                      type="text"
+                      placeholder="PROJECT SLUG"
+                      aria-label="Vercel project slug"
+                      className="w-full border border-primary-light px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-light/50 uppercase"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <label className="flex items-center gap-2 text-sm text-text-light">
+                    <input
+                      type="checkbox"
+                      checked={vercelLevels.error}
+                      onChange={(e) => setVercelLevels(prev => ({ ...prev, error: e.target.checked }))}
+                      className="rounded border-primary-light text-primary focus:ring-primary"
+                    />
+                    Error
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-text-light">
+                    <input
+                      type="checkbox"
+                      checked={vercelLevels.warning}
+                      onChange={(e) => setVercelLevels(prev => ({ ...prev, warning: e.target.checked }))}
+                      className="rounded border-primary-light text-primary focus:ring-primary"
+                    />
+                    Warning
+                  </label>
                 </div>
                 <button
                   onClick={() => {
@@ -884,8 +892,17 @@ function HomeContent() {
                         vercelLevels.warning && 'warning'
                       ].filter(Boolean).join('%2C')
                       const url = generateVercelLogsUrl(teamSlug, projectSlug, levels)
-                      setNewBangUrl(url)
-                      handleAddBang()
+                      const updatedSearchParams = new URLSearchParams(searchParams.toString())
+                      updatedSearchParams.set(newBangKey, url)
+                      router.push(`/?${updatedSearchParams.toString()}`)
+                      setNewBangKey("")
+                      setNewBangUrl("")
+                      // Reset project slug input
+                      const projectInput = document.getElementById('vercel-project-input') as HTMLInputElement
+                      if (projectInput) {
+                        projectInput.value = ""
+                      }
+                      setVercelLevels({ error: true, warning: false })
                     }
                   }}
                   aria-label="Add Vercel logs search bang"
