@@ -444,7 +444,7 @@ function HomeContent() {
             <button
               onClick={handleShare}
               aria-label="Share settings URL"
-              className="flex-1 sm:flex-none bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2"
+              className="flex-1 sm:flex-none bg-surface text-primary border border-primary px-4 py-2 rounded hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
@@ -674,7 +674,7 @@ function HomeContent() {
                                 }
                               )
                             }}
-                            className="text-sm px-3 py-1.5 rounded-md bg-primary text-white hover:bg-primary-dark transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center gap-1.5"
+                            className="text-sm px-3 py-1.5 rounded-md bg-surface text-primary border border-primary hover:bg-primary hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center gap-1.5"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
@@ -685,7 +685,7 @@ function HomeContent() {
                           </button>
                           <button
                             onClick={() => setEditingBang(null)}
-                            className="text-sm px-3 py-1.5 rounded-md bg-primary bg-opacity-5 text-primary hover:bg-primary hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center gap-1.5"
+                            className="text-sm px-3 py-1.5 rounded-md bg-surface text-red-500 border border-red-500 hover:bg-red-500 hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center gap-1.5"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <line x1="18" y1="6" x2="6" y2="18" />
@@ -737,7 +737,7 @@ function HomeContent() {
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => setEditingBang({ originalKey: key, key, url })}
-                          className="text-sm px-3 py-1.5 rounded-md bg-primary bg-opacity-5 text-primary hover:bg-primary hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center gap-1.5"
+                          className="text-sm px-3 py-1.5 rounded-md bg-surface text-primary border border-primary hover:bg-primary hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center gap-1.5"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
@@ -763,8 +763,8 @@ function HomeContent() {
                           }}
                           disabled={isDefault}
                           className={`text-sm px-3 py-1.5 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center gap-1.5 ${isDefault
-                            ? "bg-primary bg-opacity-5 text-primary/50 cursor-not-allowed"
-                            : "bg-primary bg-opacity-5 text-primary hover:bg-primary hover:text-white focus:ring-primary"
+                            ? "bg-surface text-primary/40 border border-primary/40 cursor-not-allowed opacity-50 hover:bg-surface hover:text-primary/40"
+                            : "bg-surface text-primary border border-primary hover:bg-primary hover:text-white focus:ring-primary"
                             }`}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -774,7 +774,7 @@ function HomeContent() {
                         </button>
                         <button
                           onClick={() => handleShareBang(key, url)}
-                          className="text-sm px-3 py-1.5 rounded-md bg-primary bg-opacity-5 text-primary hover:bg-primary hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center gap-1.5"
+                          className="text-sm px-3 py-1.5 rounded-md bg-surface text-primary border border-primary hover:bg-primary hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center gap-1.5"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <circle cx="18" cy="5" r="3" />
@@ -787,7 +787,7 @@ function HomeContent() {
                         </button>
                         <button
                           onClick={() => handleDeleteBang(key)}
-                          className="text-sm px-3 py-1.5 rounded-md bg-primary bg-opacity-5 text-primary hover:bg-red-500 hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center gap-1.5"
+                          className="text-sm px-3 py-1.5 rounded-md bg-surface text-red-500 border border-red-500 hover:bg-red-500 hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center gap-1.5"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M3 6h18" />
@@ -868,14 +868,14 @@ function HomeContent() {
                         "Default bang updated!",
                         {
                           description: `Searches without a bang will now use !${key}`,
-                          className: "bg-green-500 text-white border-green-600"
+                          className: "bg-primary text-white border-primary"
                         }
                       )
                     }}
                     disabled={isDefault}
-                    className={`text-sm px-3 py-1 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center gap-1.5 ${isDefault
-                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                      : "bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-blue-500"
+                    className={`text-sm px-3 py-1.5 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center gap-1.5 ${isDefault
+                      ? "bg-surface text-primary/40 border border-primary/40 cursor-not-allowed opacity-50 hover:bg-surface hover:text-primary/40"
+                      : "bg-surface text-primary border border-primary hover:bg-primary hover:text-white focus:ring-primary"
                       }`}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
