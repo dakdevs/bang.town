@@ -3,26 +3,9 @@
 import { useState, useEffect, useMemo, Suspense, useRef } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Toaster, toast } from "sonner"
+import Link from "next/link"
 import { ImportBangModal, ConfirmDialog } from "../components/ImportBangModal"
-
-const defaultBangs: Record<string, string> = {
-  c: "chat.openai.com/?q=%s",
-  "4o": "chat.openai.com/?model=gpt-4&q=%s",
-  s: "chatgpt.com?model=gpt-4o&hints=search&q=%s",
-  t3: "www.t3.chat/new?q=%s",
-  w: "en.wikipedia.org/w/index.php?search=%s",
-  yt: "www.youtube.com/results?search_query=%s",
-  gh: "github.com/search?q=%s",
-  so: "stackoverflow.com/search?q=%s",
-  a: "www.amazon.com/s?k=%s",
-  r: "www.reddit.com/search/?q=%s",
-  x: "x.com/search?q=%s",
-  imdb: "www.imdb.com/find?q=%s",
-  map: "www.google.com/maps?q=%s",
-  g: "www.google.com/search?q=%s",
-  ddg: "duckduckgo.com/?q=%s",
-  pp: "perplexity.ai/?q=%s",
-}
+import { defaultBangs, getBangName } from "../lib/defaultBangs"
 
 function generateBangCode(key: string, url: string) {
   const bangConfig = { key, url }
@@ -41,28 +24,6 @@ function decodeBangCode(code: string) {
   }
 }
 
-function getBangName(key: string): string {
-  const names: Record<string, string> = {
-    c: "ChatGPT",
-    "4o": "ChatGPT with GPT-4",
-    s: "ChatGPT Search with GPT-4",
-    t3: "T3 Chat",
-    w: "Wikipedia",
-    yt: "YouTube",
-    gh: "GitHub",
-    so: "Stack Overflow",
-    a: "Amazon",
-    r: "Reddit",
-    x: "X (Twitter)",
-    imdb: "IMDb",
-    map: "Google Maps",
-    g: "Google Search",
-    ddg: "DuckDuckGo",
-    pp: "Perplexity AI",
-  }
-  return names[key] || key
-}
-
 function HomeContent() {
   const router = useRouter()
   const pathname = usePathname()
@@ -79,6 +40,42 @@ function HomeContent() {
 
   // Get default bang from URL params
   const defaultBang = searchParams.get('default') || 'ddg'
+
+  // Function to get browser search settings URL
+  const getBrowserSettingsUrl = () => {
+    const userAgent = window.navigator.userAgent.toLowerCase()
+
+    if (userAgent.includes('chrome')) {
+      return 'chrome://settings/searchEngines'
+    } else if (userAgent.includes('firefox')) {
+      return 'about:preferences#search'
+    } else if (userAgent.includes('safari') && !userAgent.includes('chrome')) {
+      return 'safari://settings/search'
+    } else if (userAgent.includes('edg')) {
+      return 'edge://settings/searchEngines'
+    } else if (userAgent.includes('opera')) {
+      return 'opera://settings/searchEngines'
+    }
+    return null
+  }
+
+  // Get browser name for display
+  const getBrowserName = () => {
+    const userAgent = window.navigator.userAgent.toLowerCase()
+
+    if (userAgent.includes('chrome')) {
+      return 'Chrome'
+    } else if (userAgent.includes('firefox')) {
+      return 'Firefox'
+    } else if (userAgent.includes('safari') && !userAgent.includes('chrome')) {
+      return 'Safari'
+    } else if (userAgent.includes('edg')) {
+      return 'Edge'
+    } else if (userAgent.includes('opera')) {
+      return 'Opera'
+    }
+    return 'browser'
+  }
 
   // Ref to store current values for keyboard shortcuts
   const currentValuesRef = useRef({
@@ -101,14 +98,61 @@ function HomeContent() {
     const currentBangs = new Set(Array.from(searchParams.entries())
       .filter(([key]) => key !== "q")
       .map(([key]) => key))
+    const currentDefault = searchParams.get('default') || 'ddg'
+    const initialDefault = Array.from(initialBangs.entries()).find(([key, value]) => key === 'default')?.[1] || 'ddg'
 
-    // Check if any bangs were added or removed
+    // Check if any bangs were added or removed, or if default bang changed
     const hasChanges = currentBangs.size !== initialBangs.size ||
       Array.from(currentBangs).some(bang => !initialBangs.has(bang)) ||
-      Array.from(initialBangs).some(bang => !currentBangs.has(bang))
+      Array.from(initialBangs).some(bang => !currentBangs.has(bang)) ||
+      currentDefault !== initialDefault
 
     setHasUnsavedChanges(hasChanges)
+
+    // Show or dismiss the persistent toast based on changes
+    if (hasChanges) {
+      const browserSettingsUrl = getBrowserSettingsUrl()
+
+      toast.message(
+        "Unsaved Changes",
+        {
+          id: "unsaved-changes",
+          duration: Infinity,
+          description: (
+            <div className="text-sm">
+              Please update your search settings in {getBrowserName()} to save your changes.
+              {browserSettingsUrl ? ' Open your search settings to update.' : (
+                <>
+                  {" "}Check our{" "}
+                  <Link
+                    href="/instructions"
+                    className="text-blue-600 hover:text-blue-700 underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                  >
+                    setup instructions
+                  </Link>
+                  {" "}for help.
+                </>
+              )}
+            </div>
+          ),
+          dismissible: false,
+          className: "bg-yellow-50 text-yellow-800 border border-yellow-200"
+        }
+      )
+    } else {
+      toast.dismiss("unsaved-changes")
+    }
   }, [searchParams, initialBangs])
+
+  // Track initial default bang
+  useEffect(() => {
+    const initialDefault = searchParams.get('default') || 'ddg'
+    setInitialBangs(prev => {
+      const newBangs = new Set(prev)
+      newBangs.add('default')
+      return newBangs
+    })
+  }, []) // Empty dependency array means this only runs once on mount
 
   // Update fullUrl and shareUrl to include default bang
   useEffect(() => {
@@ -469,19 +513,6 @@ function HomeContent() {
           </button>
         </div>
 
-        {hasUnsavedChanges && (
-          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg" role="alert">
-            <div className="flex items-start gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 mt-0.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-              <div>
-                <p className="font-medium text-yellow-800">Unsaved Changes</p>
-                <p className="text-yellow-700 text-sm">Please update your search settings in your browser before leaving this page to ensure your changes are saved.</p>
-              </div>
-            </div>
-          </div>
-        )}
         {customBangs.length > 0 ? (
           <>
             {customBangs.length > 10 && (

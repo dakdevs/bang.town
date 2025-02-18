@@ -3,26 +3,11 @@
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { track } from "@vercel/analytics"
+import { defaultBangs } from "../../lib/defaultBangs"
 
 // This makes the page client-side only rendered
 export const dynamic = "force-dynamic"
 export const runtime = "edge"
-
-const defaultBangs: Record<string, string> = {
-  g: "www.google.com/search?q=%s",
-  w: "en.wikipedia.org/w/index.php?search=%s",
-  c: "chat.openai.com/?q=%s",
-  "4o": "chat.openai.com/?model=gpt-4&q=%s",
-  yt: "www.youtube.com/results?search_query=%s",
-  gh: "github.com/search?q=%s",
-  so: "stackoverflow.com/search?q=%s",
-  a: "www.amazon.com/s?k=%s",
-  r: "www.reddit.com/search/?q=%s",
-  x: "x.com/search?q=%s",
-  imdb: "www.imdb.com/find?q=%s",
-  map: "www.google.com/maps?q=%s",
-  t3: "www.t3.chat/new?q=%s",
-}
 
 export default function BangRedirect() {
   const searchParams = useSearchParams()
