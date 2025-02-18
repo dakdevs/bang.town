@@ -139,7 +139,7 @@ function HomeContent() {
                     {" "}Check our{" "}
                     <Link
                       href="/instructions"
-                      className="text-blue-600 hover:text-blue-700 underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                      className="text-primary hover:text-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded"
                     >
                       setup instructions
                     </Link>
@@ -149,7 +149,7 @@ function HomeContent() {
               </div>
             ),
             dismissible: false,
-            className: "bg-yellow-50 text-yellow-800 border border-yellow-200"
+            className: "bg-surface text-text-light border border-primary-light"
           }
         )
       } else {
@@ -212,7 +212,7 @@ function HomeContent() {
           "URL copied!",
           {
             description: "Your custom search URL has been copied to your clipboard.",
-            className: "bg-green-500 text-white border-green-600"
+            className: "bg-primary text-white border-primary"
           }
         )
       }
@@ -324,7 +324,7 @@ function HomeContent() {
         `Added !${newBangKey} bang!`,
         {
           description: `You can now use !${newBangKey} to search ${bangDomain} 🎉`,
-          className: "bg-green-500 text-white border-green-600"
+          className: "bg-primary text-white border-primary"
         }
       )
     }
@@ -354,7 +354,7 @@ function HomeContent() {
         "Settings URL copied!",
         {
           description: "Share this URL with others to let them import all your custom bangs at once.",
-          className: "bg-green-500 text-white border-green-600"
+          className: "bg-primary text-white border-primary"
         }
       )
     } catch (error) {
@@ -378,7 +378,7 @@ function HomeContent() {
       "Bang code copied!",
       {
         description: "Share this code with others so they can import your bang configuration.",
-        className: "bg-green-500 text-white border-green-600"
+        className: "bg-primary text-white border-primary"
       }
     )
   }
@@ -403,7 +403,7 @@ function HomeContent() {
         richColors
       />
       <div className="mb-4 sm:mb-6" role="region" aria-labelledby="custom-search-url-heading">
-        <h2 id="custom-search-url-heading" className="text-xl sm:text-2xl mb-3 sm:mb-4 text-blue-500">Your Custom Search URL</h2>
+        <h2 id="custom-search-url-heading" className="text-xl sm:text-2xl mb-3 sm:mb-4 text-primary">Your Custom Search URL</h2>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <input
             id="custom-search-url"
@@ -411,7 +411,7 @@ function HomeContent() {
             value={fullUrl}
             readOnly
             aria-label="Your custom search URL"
-            className="bg-gray-100 p-2 rounded text-sm flex-grow h-10 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-x-auto"
+            className="bg-surface p-2 rounded text-sm flex-grow h-10 font-mono focus:outline-none focus:ring-2 focus:ring-primary overflow-x-auto"
             onClick={(e) => e.currentTarget.select()}
           />
           <div className="flex gap-2" role="group" aria-label="URL sharing options">
@@ -427,12 +427,12 @@ function HomeContent() {
                   "URL copied!",
                   {
                     description: "Your custom search URL has been copied to your clipboard.",
-                    className: "bg-green-500 text-white border-green-600"
+                    className: "bg-primary text-white border-primary"
                   }
                 )
               }}
               aria-label="Copy custom search URL to clipboard"
-              className="flex-1 sm:flex-none bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-2 flex items-center justify-center gap-2"
+              className="flex-1 sm:flex-none bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2 flex items-center justify-center gap-2"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
@@ -443,7 +443,7 @@ function HomeContent() {
             <button
               onClick={handleShare}
               aria-label="Share settings URL"
-              className="flex-1 sm:flex-none bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors flex items-center justify-center gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-green-700 focus:ring-offset-2"
+              className="flex-1 sm:flex-none bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
@@ -454,24 +454,24 @@ function HomeContent() {
             </button>
           </div>
         </div>
-        <div className="mt-2 space-y-2 text-sm text-gray-600">
-          <p>Pro tip: Use <code className="bg-gray-100 px-1 py-0.5 rounded">!settings</code> to quickly return to this page with your custom bangs.</p>
-          <p>Need help setting up? Check out our <a href="/instructions" className="text-blue-500 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">browser setup instructions</a>.</p>
+        <div className="mt-2 space-y-2 text-sm text-text-light">
+          <p>Pro tip: Use <code className="bg-surface px-1 py-0.5 rounded">!settings</code> to quickly return to this page with your custom bangs.</p>
+          <p>Need help setting up? Check out our <a href="/instructions" className="text-primary hover:text-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary">browser setup instructions</a>.</p>
         </div>
       </div>
 
       <div className="mb-4 sm:mb-6" role="region" aria-labelledby="add-bang-heading">
-        <h2 id="add-bang-heading" className="text-xl sm:text-2xl mb-3 sm:mb-4 text-blue-500">Add Custom Bang</h2>
+        <h2 id="add-bang-heading" className="text-xl sm:text-2xl mb-3 sm:mb-4 text-primary">Add Custom Bang</h2>
         <div className="flex flex-col sm:flex-row gap-2" role="form" aria-label="Add custom bang form">
           <div className="relative w-full sm:w-1/4">
-            <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" aria-hidden="true">!</span>
+            <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-text-light" aria-hidden="true">!</span>
             <input
               type="text"
               value={newBangKey}
               onChange={(e) => setNewBangKey(e.target.value)}
               placeholder="Bang key (e.g., g)"
               aria-label="Bang key"
-              className="border border-gray-300 p-2 pl-6 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-primary-light pl-6 pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -482,7 +482,7 @@ function HomeContent() {
             />
           </div>
           <div className="relative flex-grow">
-            <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" aria-hidden="true">https://</span>
+            <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-text-light whitespace-nowrap" aria-hidden="true">https://</span>
             <input
               id="bang-url-input"
               type="text"
@@ -501,13 +501,13 @@ function HomeContent() {
               }}
               placeholder="URL (e.g., www.google.com/search?q=%s)"
               aria-label="Bang URL"
-              className="border border-gray-300 p-2 pl-16 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-primary-light pl-[4.5rem] pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
           <button
             onClick={handleAddBang}
             aria-label="Add custom bang"
-            className="w-full sm:w-auto bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-2"
+            className="w-full sm:w-auto bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2"
           >
             Add
           </button>
@@ -515,12 +515,12 @@ function HomeContent() {
       </div>
 
       <div className="mb-4 sm:mb-6" role="region" aria-labelledby="custom-bangs-heading">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mb-3 sm:mb-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white p-4 rounded-lg">
-          <h2 id="custom-bangs-heading" className="text-xl sm:text-2xl text-white">Custom Bangs</h2>
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 mb-3 sm:mb-4 bg-gradient-to-r from-primary to-primary-light text-white p-4 rounded-lg">
+          <h2 id="custom-bangs-heading" className="text-xl sm:text-2xl text-white m-0">Custom Bangs</h2>
           <button
             onClick={() => setIsImportModalOpen(true)}
             aria-label="Import bang configuration"
-            className="w-full sm:w-auto bg-white text-blue-600 px-4 py-2 rounded hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-500"
+            className="w-full sm:w-auto bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -537,7 +537,7 @@ function HomeContent() {
               <div className="mb-4">
                 <div className="relative">
                   <svg
-                    className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-text-light"
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
                     fill="none"
@@ -557,10 +557,10 @@ function HomeContent() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search custom bangs..."
                     aria-label="Search custom bangs"
-                    className="w-full h-10 pl-8 pr-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full h-10 pl-8 pr-4 border border-primary-light rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
-                <p className="mt-2 text-sm text-gray-500" role="status">
+                <p className="mt-2 text-sm text-text-light" role="status">
                   Showing {filteredBangs.length} of {customBangs.length} bangs
                 </p>
               </div>
@@ -577,26 +577,26 @@ function HomeContent() {
                 .map(({ key, url, isNew }) => {
                   const isDefault = key === defaultBang
                   return (
-                    <li key={key} className={`${isDefault ? "bg-blue-50 border-blue-200" : "bg-white border-gray-100"} rounded-lg p-2 flex flex-col gap-2`} role="listitem">
+                    <li key={key} className={`${isDefault ? "bg-primary-light border-primary text-white" : "bg-surface border-primary-light text-primary"} rounded-lg p-2 flex flex-col gap-2`} role="listitem">
                       <div className="flex flex-wrap items-center gap-2">
                         <div className="flex items-center gap-2 min-w-[200px]">
-                          <code className={`${isDefault ? "bg-blue-100 border-blue-200 text-blue-800" : "bg-blue-50 border-blue-100 text-blue-700"} px-2 py-1 rounded-md font-mono text-sm border font-medium min-w-[3rem] text-center`}>
+                          <code className={`${isDefault ? "bg-primary-light border-primary text-white" : "bg-surface border-primary-light text-primary"} px-2 py-1 rounded-md font-mono text-sm border font-medium min-w-[3rem] text-center`}>
                             !{key}
                           </code>
-                          <span className="text-gray-300 select-none">→</span>
-                          <span className={`${isDefault ? "text-blue-800" : "text-purple-700"} font-medium`}>
+                          <span className="text-text-light select-none">→</span>
+                          <span className={`${isDefault ? "text-primary-dark" : "text-primary"} font-medium`}>
                             {new URL(`https://${url}`).hostname}
                           </span>
                         </div>
                         {(isNew || isDefault) && (
                           <div className="flex gap-1">
                             {isNew && (
-                              <span className="text-blue-600 text-xs font-medium px-2 py-1 bg-blue-50 rounded-md border border-blue-200" role="status">
+                              <span className="text-primary text-xs font-medium px-2 py-1 bg-surface rounded-md border border-primary-light" role="status">
                                 New
                               </span>
                             )}
                             {isDefault && (
-                              <span className="text-blue-600 text-xs font-medium px-2 py-1 bg-blue-50 rounded-md border border-blue-200" role="status">
+                              <span className="text-primary text-xs font-medium px-2 py-1 bg-surface rounded-md border border-primary-light" role="status">
                                 Default
                               </span>
                             )}
@@ -607,7 +607,7 @@ function HomeContent() {
                             type="text"
                             value={`https://${url}`}
                             readOnly
-                            className={`${isDefault ? "bg-blue-50 border-blue-100" : "bg-gray-50 border-gray-100"} text-gray-600 px-2 py-1 rounded-md font-mono text-sm border flex-1 overflow-x-auto focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                            className={`${isDefault ? "bg-primary-light border-primary text-white" : "bg-surface border-primary-light text-primary"} px-2 py-1 rounded-md font-mono text-sm border flex-1 overflow-x-auto focus:outline-none focus:ring-2 focus:ring-primary`}
                             onClick={(e) => e.currentTarget.select()}
                           />
                         </div>
@@ -626,14 +626,14 @@ function HomeContent() {
                               "Default bang updated!",
                               {
                                 description: `Searches without a bang will now use !${key}`,
-                                className: "bg-green-500 text-white border-green-600"
+                                className: "bg-primary text-white border-primary"
                               }
                             )
                           }}
                           disabled={isDefault}
                           className={`text-sm px-3 py-1 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center gap-1.5 ${isDefault
-                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                            : "bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-blue-500"
+                            ? "bg-primary-light text-primary-dark cursor-not-allowed"
+                            : "bg-primary text-primary hover:bg-primary-dark focus:ring-primary"
                             }`}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -643,7 +643,7 @@ function HomeContent() {
                         </button>
                         <button
                           onClick={() => handleShareBang(key, url)}
-                          className="text-sm px-3 py-1 rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center gap-1.5"
+                          className="text-sm px-3 py-1 rounded-md bg-primary text-white hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2 flex items-center gap-1.5"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <circle cx="18" cy="5" r="3" />
@@ -656,7 +656,7 @@ function HomeContent() {
                         </button>
                         <button
                           onClick={() => handleDeleteBang(key)}
-                          className="text-sm px-3 py-1 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center gap-1.5"
+                          className="text-sm px-3 py-1 rounded-md bg-primary-light text-white hover:bg-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center gap-1.5"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M3 6h18" />
@@ -674,17 +674,17 @@ function HomeContent() {
             </ul>
           </>
         ) : (
-          <div className="text-center p-4 bg-gray-100 rounded-lg" role="status">
-            <p className="text-gray-600 mb-2">You haven't added any custom bangs yet.</p>
-            <p className="text-blue-500">Add your first custom bang above to get started!</p>
+          <div className="text-center p-4 bg-surface rounded-lg" role="status">
+            <p className="text-text-light mb-2">You haven't added any custom bangs yet.</p>
+            <p className="text-primary">Add your first custom bang above to get started!</p>
           </div>
         )}
       </div>
 
       <div role="region" aria-labelledby="default-bangs-heading">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mb-3 sm:mb-4 bg-gradient-to-r from-gray-600 to-gray-700 text-white p-4 rounded-lg">
-          <h2 id="builtin-bangs-heading" className="text-xl sm:text-2xl text-white">Built-in Bangs</h2>
-          <p className="text-sm text-gray-200">These are the built-in bangs that come with bang.town</p>
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 mb-3 sm:mb-4 bg-gradient-to-r from-primary-dark to-primary text-white p-4 rounded-lg">
+          <h2 id="builtin-bangs-heading" className="text-xl sm:text-2xl text-white m-0">Built-in Bangs</h2>
+          <p className="text-sm text-text-light">These are the built-in bangs that come with bang.town</p>
         </div>
         <ul className="space-y-2" role="list" aria-label="Built-in bangs list">
           {Object.entries(defaultBangs).map(([key, url]) => {
@@ -698,7 +698,7 @@ function HomeContent() {
                     !{key}
                   </code>
                   <span className="text-gray-300 select-none">→</span>
-                  <span className={`${isOverridden ? "line-through" : ""} ${isDefault ? "text-blue-800" : "text-purple-700"} font-medium`}>
+                  <span className={`${isOverridden ? "line-through" : ""} ${isDefault ? "text-blue-800" : "text-primary"} font-medium`}>
                     {name}
                   </span>
                 </div>

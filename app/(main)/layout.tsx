@@ -96,7 +96,7 @@ export default function MainLayout({
               rel="noopener noreferrer"
               className="opacity-50 hover:opacity-100 transition-opacity"
             >
-              <img src="/dak-logo.svg" alt="dak logo" className="h-6 invert" />
+              <img src="/dak-logo.svg" alt="dak logo" className="h-6 [filter:brightness(0)_saturate(100%)_invert(45%)_sepia(83%)_saturate(1122%)_hue-rotate(332deg)_brightness(101%)_contrast(101%)]" />
             </a>
           </footer>
         </div>

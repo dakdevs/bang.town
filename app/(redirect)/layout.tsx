@@ -7,7 +7,7 @@ export default function RedirectLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body style={{ background: 'transparent' }}>{children}</body>
     </html>
   )
 }
