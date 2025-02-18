@@ -49,7 +49,7 @@ function HomeContent() {
   const [initialUrl, setInitialUrl] = useState("")
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [initialParams, setInitialParams] = useState<string>("")
-  const [editingBang, setEditingBang] = useState<{ key: string, url: string } | null>(null)
+  const [editingBang, setEditingBang] = useState<{ originalKey: string, key: string, url: string } | null>(null)
 
   // Get default bang from URL params
   const defaultBang = searchParams.get('default') || 'ddg'
@@ -583,23 +583,33 @@ function HomeContent() {
                     return (
                       <li key={key} className="bg-surface rounded-lg p-4 flex flex-col gap-3 border border-primary-light/10 hover:border-primary-light/30 transition-colors" role="listitem">
                         <div className="flex flex-wrap items-center gap-3">
-                          <div className="flex items-center gap-2 min-w-[200px]">
-                            <code className="bg-surface border-primary-light/20 px-3 py-1.5 rounded-md font-mono text-sm border font-medium min-w-[3rem] text-center text-primary">
-                              !{key}
-                            </code>
-                            <span className="text-text-light/50 select-none">→</span>
-                            <input
-                              type="text"
-                              value={editingBang.url}
-                              onChange={(e) => setEditingBang({ key, url: e.target.value.replace(/^(https?:\/\/)/, "") })}
-                              placeholder="URL (e.g., www.google.com/search?q=%s)"
-                              className="flex-1 border border-primary-light px-3 py-1.5 rounded focus:outline-none focus:ring-2 focus:ring-primary text-text"
-                            />
+                          <div className="flex items-center gap-2 w-full">
+                            <div className="relative shrink-0">
+                              <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-text-light" aria-hidden="true">!</span>
+                              <input
+                                type="text"
+                                value={editingBang.key}
+                                onChange={(e) => setEditingBang({ ...editingBang, key: e.target.value })}
+                                placeholder="Bang key"
+                                className="bg-surface border-primary-light/20 pl-6 pr-2 py-1.5 rounded-md font-mono text-sm border font-medium w-[5rem] text-center text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                              />
+                            </div>
+                            <span className="text-text-light/50 select-none shrink-0">→</span>
+                            <div className="flex-1">
+                              <input
+                                type="text"
+                                value={editingBang.url}
+                                onChange={(e) => setEditingBang({ ...editingBang, url: e.target.value.replace(/^(https?:\/\/)/, "") })}
+                                placeholder="URL (e.g., www.google.com/search?q=%s)"
+                                className="w-full border border-primary-light px-3 py-1.5 rounded focus:outline-none focus:ring-2 focus:ring-primary text-text"
+                              />
+                            </div>
                           </div>
                         </div>
                         <div className="flex justify-end gap-2">
                           <button
                             onClick={() => {
+                              // Validate URL contains %s
                               if (!editingBang.url.includes("%s")) {
                                 toast.error(
                                   "Missing search term placeholder!",
@@ -610,14 +620,56 @@ function HomeContent() {
                                 )
                                 return
                               }
+
+                              // Check for duplicates (excluding the current bang being edited)
+                              const isDuplicateKey = Array.from(searchParams.entries())
+                                .some(([k, v]) => k !== editingBang.originalKey && k === editingBang.key)
+
+                              const isDuplicateUrl = Array.from(searchParams.entries())
+                                .some(([k, v]) => k !== editingBang.originalKey && v === editingBang.url)
+
+                              const isBuiltInDuplicate = defaultBangs[editingBang.key] === editingBang.url
+
+                              if ((isDuplicateKey && isDuplicateUrl) || isBuiltInDuplicate) {
+                                toast.error(
+                                  `The bang !${editingBang.key} with this URL already exists!`,
+                                  {
+                                    description: isBuiltInDuplicate
+                                      ? "This exact bang is already available as a built-in bang."
+                                      : "You already have this exact custom bang.",
+                                    className: "bg-red-500 text-white border-red-600"
+                                  }
+                                )
+                                return
+                              }
+
+                              // If only the key exists (but with a different URL), show warning
+                              if (isDuplicateKey || defaultBangs[editingBang.key]) {
+                                toast.error(
+                                  `The bang !${editingBang.key} already exists!`,
+                                  {
+                                    description: defaultBangs[editingBang.key]
+                                      ? "This is a built-in bang - try a different key."
+                                      : "You already have a custom bang with this key.",
+                                    className: "bg-red-500 text-white border-red-600"
+                                  }
+                                )
+                                return
+                              }
+
                               const updatedSearchParams = new URLSearchParams(searchParams.toString())
-                              updatedSearchParams.set(key, editingBang.url)
+                              // Remove the old bang
+                              updatedSearchParams.delete(editingBang.originalKey)
+                              // Add the new bang
+                              updatedSearchParams.set(editingBang.key, editingBang.url)
                               router.push(`/?${updatedSearchParams.toString()}`)
                               setEditingBang(null)
                               toast.success(
                                 "Bang updated!",
                                 {
-                                  description: `The URL for !${key} has been updated.`,
+                                  description: editingBang.originalKey !== editingBang.key
+                                    ? `The bang has been updated from !${editingBang.originalKey} to !${editingBang.key}`
+                                    : `The URL for !${editingBang.key} has been updated.`,
                                   className: "bg-primary text-white border-primary"
                                 }
                               )
@@ -684,7 +736,7 @@ function HomeContent() {
                       </div>
                       <div className="flex justify-end gap-2">
                         <button
-                          onClick={() => setEditingBang({ key, url })}
+                          onClick={() => setEditingBang({ originalKey: key, key, url })}
                           className="text-sm px-3 py-1.5 rounded-md bg-primary bg-opacity-5 text-primary hover:bg-primary hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center gap-1.5"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
