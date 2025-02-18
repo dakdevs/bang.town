@@ -271,18 +271,19 @@ function HomeContent() {
   return (
     <div>
       <Toaster />
-      <div className="mb-4 sm:mb-6">
-        <h2 className="text-xl sm:text-2xl mb-3 sm:mb-4 text-blue-500">Your Custom Search URL</h2>
+      <div className="mb-4 sm:mb-6" role="region" aria-labelledby="custom-search-url-heading">
+        <h2 id="custom-search-url-heading" className="text-xl sm:text-2xl mb-3 sm:mb-4 text-blue-500">Your Custom Search URL</h2>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <input
             id="custom-search-url"
             type="text"
             value={fullUrl}
             readOnly
+            aria-label="Your custom search URL"
             className="bg-gray-100 p-2 rounded text-sm flex-grow h-10 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-x-auto"
             onClick={(e) => e.currentTarget.select()}
           />
-          <div className="flex gap-2">
+          <div className="flex gap-2" role="group" aria-label="URL sharing options">
             <button
               onClick={() => {
                 navigator.clipboard.writeText(fullUrl)
@@ -294,15 +295,17 @@ function HomeContent() {
                   }
                 )
               }}
-              className="flex-1 sm:flex-none bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors whitespace-nowrap"
+              aria-label="Copy custom search URL to clipboard"
+              className="flex-1 sm:flex-none bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-2"
             >
               Copy
             </button>
             <button
               onClick={handleShare}
-              className="flex-1 sm:flex-none bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+              aria-label="Share settings URL"
+              className="flex-1 sm:flex-none bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors flex items-center justify-center gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-green-700 focus:ring-offset-2"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
                 <polyline points="16 6 12 2 8 6" />
                 <line x1="12" y1="2" x2="12" y2="15" />
@@ -313,21 +316,22 @@ function HomeContent() {
         </div>
         <div className="mt-2 space-y-2 text-sm text-gray-600">
           <p>Pro tip: Use <code className="bg-gray-100 px-1 py-0.5 rounded">!settings</code> to quickly return to this page with your custom bangs.</p>
-          <p>Need help setting up? Check out our <a href="/instructions" className="text-blue-500 hover:text-blue-600 transition-colors">browser setup instructions</a>.</p>
+          <p>Need help setting up? Check out our <a href="/instructions" className="text-blue-500 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">browser setup instructions</a>.</p>
         </div>
       </div>
 
-      <div className="mb-4 sm:mb-6">
-        <h2 className="text-xl sm:text-2xl mb-3 sm:mb-4 text-blue-500">Add Custom Bang</h2>
-        <div className="flex flex-col sm:flex-row gap-2">
+      <div className="mb-4 sm:mb-6" role="region" aria-labelledby="add-bang-heading">
+        <h2 id="add-bang-heading" className="text-xl sm:text-2xl mb-3 sm:mb-4 text-blue-500">Add Custom Bang</h2>
+        <div className="flex flex-col sm:flex-row gap-2" role="form" aria-label="Add custom bang form">
           <div className="relative w-full sm:w-1/4">
-            <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500">!</span>
+            <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" aria-hidden="true">!</span>
             <input
               type="text"
               value={newBangKey}
               onChange={(e) => setNewBangKey(e.target.value)}
               placeholder="Bang key (e.g., g)"
-              className="border border-gray-300 p-2 pl-6 rounded w-full"
+              aria-label="Bang key"
+              className="border border-gray-300 p-2 pl-6 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -338,7 +342,7 @@ function HomeContent() {
             />
           </div>
           <div className="relative flex-grow">
-            <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500">https://</span>
+            <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" aria-hidden="true">https://</span>
             <input
               id="bang-url-input"
               type="text"
@@ -356,26 +360,29 @@ function HomeContent() {
                 }
               }}
               placeholder="URL (e.g., www.google.com/search?q=%s)"
-              className="border border-gray-300 p-2 pl-16 rounded w-full"
+              aria-label="Bang URL"
+              className="border border-gray-300 p-2 pl-16 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <button
             onClick={handleAddBang}
-            className="w-full sm:w-auto bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+            aria-label="Add custom bang"
+            className="w-full sm:w-auto bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-2"
           >
             Add
           </button>
         </div>
       </div>
 
-      <div className="mb-4 sm:mb-6">
+      <div className="mb-4 sm:mb-6" role="region" aria-labelledby="custom-bangs-heading">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mb-3 sm:mb-4">
-          <h2 className="text-xl sm:text-2xl text-blue-500">Custom Bangs</h2>
+          <h2 id="custom-bangs-heading" className="text-xl sm:text-2xl text-blue-500">Custom Bangs</h2>
           <button
             onClick={() => setIsImportModalOpen(true)}
-            className="w-full sm:w-auto bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+            aria-label="Import bang configuration"
+            className="w-full sm:w-auto bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-2"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
@@ -385,9 +392,9 @@ function HomeContent() {
         </div>
 
         {hasUnsavedChanges && (
-          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg" role="alert">
             <div className="flex items-start gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 mt-0.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
               <div>
@@ -411,6 +418,7 @@ function HomeContent() {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
+                    aria-hidden="true"
                   >
                     <circle cx="11" cy="11" r="8" />
                     <path d="m21 21-4.3-4.3" />
@@ -421,15 +429,16 @@ function HomeContent() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search custom bangs..."
+                    aria-label="Search custom bangs"
                     className="w-full h-10 pl-8 pr-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                <p className="mt-2 text-sm text-gray-500">
+                <p className="mt-2 text-sm text-gray-500" role="status">
                   Showing {filteredBangs.length} of {customBangs.length} bangs
                 </p>
               </div>
             )}
-            <ul className="space-y-2">
+            <ul className="space-y-2" role="list" aria-label="Custom bangs list">
               {filteredBangs
                 .sort((a, b) => {
                   const aIsNew = !initialBangs.has(a.key)
@@ -441,21 +450,23 @@ function HomeContent() {
                 .map(({ key, url }) => {
                   const isNew = !initialBangs.has(key)
                   return (
-                    <li key={key} className={`flex flex-col sm:flex-row justify-between items-start sm:items-center p-2 rounded gap-2 ${isNew ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'}`}>
+                    <li key={key} className={`flex flex-col sm:flex-row justify-between items-start sm:items-center p-2 rounded gap-2 ${isNew ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'}`} role="listitem">
                       <span className="break-all">
                         <strong className="text-blue-500">!{key}:</strong> https://{url}
-                        {isNew && <span className="ml-2 text-blue-600 text-sm">(New)</span>}
+                        {isNew && <span className="ml-2 text-blue-600 text-sm" role="status">(New)</span>}
                       </span>
-                      <div className="flex gap-2 w-full sm:w-auto">
+                      <div className="flex gap-2 w-full sm:w-auto" role="group" aria-label={`Actions for !${key}`}>
                         <button
                           onClick={() => handleShareBang(key, url)}
-                          className="flex-1 sm:flex-none bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                          aria-label={`Share !${key} bang configuration`}
+                          className="flex-1 sm:flex-none bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-2"
                         >
                           Share
                         </button>
                         <button
                           onClick={() => handleDeleteBang(key)}
-                          className="flex-1 sm:flex-none bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+                          aria-label={`Delete !${key} bang`}
+                          className="flex-1 sm:flex-none bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-offset-2"
                         >
                           Delete
                         </button>
@@ -466,70 +477,70 @@ function HomeContent() {
             </ul>
           </>
         ) : (
-          <div className="text-center p-4 bg-gray-100 rounded-lg">
+          <div className="text-center p-4 bg-gray-100 rounded-lg" role="status">
             <p className="text-gray-600 mb-2">You haven't added any custom bangs yet.</p>
             <p className="text-blue-500">Add your first custom bang above to get started!</p>
           </div>
         )}
       </div>
 
-      <div>
-        <h2 className="text-xl sm:text-2xl mb-3 sm:mb-4 text-blue-500">Default Bangs</h2>
-        <ul className="space-y-2">
+      <div role="region" aria-labelledby="default-bangs-heading">
+        <h2 id="default-bangs-heading" className="text-xl sm:text-2xl mb-3 sm:mb-4 text-blue-500">Default Bangs</h2>
+        <ul className="space-y-2" role="list" aria-label="Default bangs list">
           {Object.entries(defaultBangs).map(([key, url]) => {
             const isOverridden = searchParams.has(key)
             return (
-              <li key={key} className={`${isOverridden ? "line-through text-gray-500" : ""} break-all`}>
+              <li key={key} className={`${isOverridden ? "line-through text-gray-500" : ""} break-all`} role="listitem">
                 <strong>!{key}:</strong> https://{url}
-                {isOverridden && <span className="ml-2 text-red-500">(Overridden)</span>}
+                {isOverridden && <span className="ml-2 text-red-500" role="status">(Overridden)</span>}
               </li>
             )
           })}
         </ul>
-      </div>
 
-      {isImportModalOpen && (
-        <ImportBangModal
-          onClose={() => setIsImportModalOpen(false)}
-          onImport={(key: string, url: string) => {
-            // Check for existing bang
-            if (searchParams.has(key) || defaultBangs[key]) {
-              toast.error(
-                `The bang !${key} already exists!`,
+        {isImportModalOpen && (
+          <ImportBangModal
+            onClose={() => setIsImportModalOpen(false)}
+            onImport={(key: string, url: string) => {
+              // Check for existing bang
+              if (searchParams.has(key) || defaultBangs[key]) {
+                toast.error(
+                  `The bang !${key} already exists!`,
+                  {
+                    description: defaultBangs[key]
+                      ? "This is a default bang - try a different key."
+                      : "You already have a custom bang with this key.",
+                    className: "bg-red-500 text-white border-red-600"
+                  }
+                )
+                return
+              }
+
+              const updatedSearchParams = new URLSearchParams(searchParams.toString())
+              updatedSearchParams.set(key, url)
+              router.push(`/?${updatedSearchParams.toString()}`)
+
+              toast.success(
+                `Imported !${key} bang!`,
                 {
-                  description: defaultBangs[key]
-                    ? "This is a default bang - try a different key."
-                    : "You already have a custom bang with this key.",
-                  className: "bg-red-500 text-white border-red-600"
+                  description: `You can now use !${key} to search ${new URL(`https://${url}`).hostname} 🎉`,
+                  className: "bg-green-500 text-white border-green-600"
                 }
               )
-              return
-            }
+              setIsImportModalOpen(false)
+            }}
+          />
+        )}
 
-            const updatedSearchParams = new URLSearchParams(searchParams.toString())
-            updatedSearchParams.set(key, url)
-            router.push(`/?${updatedSearchParams.toString()}`)
-
-            toast.success(
-              `Imported !${key} bang!`,
-              {
-                description: `You can now use !${key} to search ${new URL(`https://${url}`).hostname} 🎉`,
-                className: "bg-green-500 text-white border-green-600"
-              }
-            )
-            setIsImportModalOpen(false)
-          }}
-        />
-      )}
-
-      {deleteConfirmation && (
-        <ConfirmDialog
-          title="Delete Bang"
-          message={`Are you sure you want to delete the !${deleteConfirmation.key} bang? This action cannot be undone.`}
-          onClose={() => setDeleteConfirmation(null)}
-          onConfirm={confirmDelete}
-        />
-      )}
+        {deleteConfirmation && (
+          <ConfirmDialog
+            title="Delete Bang"
+            message={`Are you sure you want to delete the !${deleteConfirmation.key} bang? This action cannot be undone.`}
+            onClose={() => setDeleteConfirmation(null)}
+            onConfirm={confirmDelete}
+          />
+        )}
+      </div>
     </div>
   )
 }
