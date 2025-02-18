@@ -35,6 +35,18 @@ function decodeBangCode(code: string) {
   }
 }
 
+function generateYouTubeChannelSearchUrl(username: string) {
+  // Remove @ if it was included
+  username = username.replace(/^@/, '')
+  return `www.youtube.com/@${username}/search?query=%s`
+}
+
+function generateTwitterSearchUrl(username: string) {
+  // Remove @ if it was included
+  username = username.replace(/^@/, '')
+  return `x.com/search?q=from%3A${username}%20%s`
+}
+
 function HomeContent() {
   const router = useRouter()
   const pathname = usePathname()
@@ -50,6 +62,8 @@ function HomeContent() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [initialParams, setInitialParams] = useState<string>("")
   const [editingBang, setEditingBang] = useState<{ originalKey: string, key: string, url: string } | null>(null)
+  const [isYouTubeMode, setIsYouTubeMode] = useState(false)
+  const [activeTab, setActiveTab] = useState<'custom' | 'youtube' | 'tweets' | 'more'>('custom')
 
   // Get default bang from URL params
   const defaultBang = searchParams.get('default') || 'ddg'
@@ -463,55 +477,279 @@ function HomeContent() {
 
       <div className="mb-4 sm:mb-6" role="region" aria-labelledby="add-bang-heading">
         <h2 id="add-bang-heading" className="text-xl sm:text-2xl mb-3 sm:mb-4 text-primary">Add Custom Bang</h2>
-        <div className="flex flex-col sm:flex-row gap-2" role="form" aria-label="Add custom bang form">
-          <div className="relative w-full sm:w-1/4">
-            <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-text-light" aria-hidden="true">!</span>
-            <input
-              type="text"
-              value={newBangKey}
-              onChange={(e) => setNewBangKey(e.target.value)}
-              placeholder="Bang key (e.g., g)"
-              aria-label="Bang key"
-              className="w-full border border-primary-light pl-6 pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  document.getElementById('bang-url-input')?.focus()
-                }
-              }}
-            />
-          </div>
-          <div className="relative flex-grow">
-            <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-text-light whitespace-nowrap" aria-hidden="true">https://</span>
-            <input
-              id="bang-url-input"
-              type="text"
-              value={newBangUrl}
-              onChange={(e) => setNewBangUrl(e.target.value.replace(/^(https?:\/\/)/, ""))}
-              onPaste={(e) => {
-                e.preventDefault()
-                const pastedText = e.clipboardData.getData("text")
-                setNewBangUrl(pastedText.replace(/^(https?:\/\/)/, ""))
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  handleAddBang()
-                }
-              }}
-              placeholder="URL (e.g., www.google.com/search?q=%s)"
-              aria-label="Bang URL"
-              className="w-full border border-primary-light pl-[4.5rem] pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
+
+        {/* Tab Navigation */}
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
           <button
-            onClick={handleAddBang}
-            aria-label="Add custom bang"
-            className="w-full sm:w-auto bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2"
+            onClick={() => setActiveTab('custom')}
+            className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === 'custom'
+              ? "bg-primary text-white"
+              : "bg-white text-primary hover:bg-primary hover:text-white"
+              }`}
           >
-            Add
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+            </svg>
+            Custom Bang
           </button>
+          <button
+            onClick={() => setActiveTab('youtube')}
+            className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === 'youtube'
+              ? "bg-primary text-white"
+              : "bg-white text-primary hover:bg-primary hover:text-white"
+              }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
+            </svg>
+            YouTube Channel
+          </button>
+          <button
+            onClick={() => setActiveTab('tweets')}
+            className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === 'tweets'
+              ? "bg-primary text-white"
+              : "bg-white text-primary hover:bg-primary hover:text-white"
+              }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+            Tweets
+          </button>
+          <button
+            onClick={() => setActiveTab('more')}
+            className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap text-sm bg-[#FFD7CC] text-primary opacity-50 cursor-not-allowed`}
+            disabled
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="16" />
+              <line x1="8" y1="12" x2="16" y2="12" />
+            </svg>
+            More Coming Soon
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <div className="bg-surface p-4 rounded-lg border border-primary-light/20">
+          {activeTab === 'custom' && (
+            <div className="space-y-4">
+              <p className="text-text-light text-sm">
+                Create a custom bang by specifying a key and URL pattern. Use <code className="bg-accent px-1 rounded">%s</code> in the URL where you want the search term to appear.
+              </p>
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative w-full sm:w-1/4">
+                    <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-text-light" aria-hidden="true">!</span>
+                    <input
+                      type="text"
+                      value={newBangKey}
+                      onChange={(e) => setNewBangKey(e.target.value)}
+                      placeholder="Bang key (e.g., g)"
+                      aria-label="Bang key"
+                      className="w-full border border-primary-light pl-6 pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          document.getElementById('bang-url-input')?.focus()
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="relative flex-grow">
+                    <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-text-light whitespace-nowrap" aria-hidden="true">https://</span>
+                    <input
+                      id="bang-url-input"
+                      type="text"
+                      value={newBangUrl}
+                      onChange={(e) => setNewBangUrl(e.target.value.replace(/^(https?:\/\/)/, ""))}
+                      onPaste={(e) => {
+                        e.preventDefault()
+                        const pastedText = e.clipboardData.getData("text")
+                        setNewBangUrl(pastedText.replace(/^(https?:\/\/)/, ""))
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          handleAddBang()
+                        }
+                      }}
+                      placeholder="URL (e.g., www.google.com/search?q=%s)"
+                      aria-label="Bang URL"
+                      className="w-full border border-primary-light pl-[4.5rem] pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={handleAddBang}
+                  aria-label="Add custom bang"
+                  className="w-full bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2 flex items-center justify-center gap-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                  Add Bang
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'youtube' && (
+            <div className="space-y-4">
+              <p className="text-text-light text-sm">
+                Create a bang to search within a specific YouTube channel. Just enter the channel's username (with or without @) and a bang key.
+              </p>
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative w-full sm:w-1/4">
+                    <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-text-light" aria-hidden="true">!</span>
+                    <input
+                      type="text"
+                      value={newBangKey}
+                      onChange={(e) => setNewBangKey(e.target.value)}
+                      placeholder="Bang key (e.g., mkbhd)"
+                      aria-label="Bang key"
+                      className="w-full border border-primary-light pl-6 pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          document.getElementById('youtube-username-input')?.focus()
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="relative flex-grow">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-light/50" aria-hidden="true">@</span>
+                    <input
+                      id="youtube-username-input"
+                      type="text"
+                      value={newBangUrl}
+                      onChange={(e) => {
+                        const username = e.target.value.replace(/^@/, '')
+                        setNewBangUrl(username)
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          if (newBangKey && newBangUrl) {
+                            const url = generateYouTubeChannelSearchUrl(newBangUrl)
+                            setNewBangUrl(url)
+                            handleAddBang()
+                          }
+                        }
+                      }}
+                      placeholder="YOUTUBE USERNAME (E.G., MKBHD)"
+                      aria-label="YouTube username"
+                      className="w-full border border-primary-light pl-8 pr-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-light/50 uppercase"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    if (newBangKey && newBangUrl) {
+                      const url = generateYouTubeChannelSearchUrl(newBangUrl)
+                      setNewBangUrl(url)
+                      handleAddBang()
+                    }
+                  }}
+                  aria-label="Add YouTube channel search bang"
+                  className="w-full bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2 flex items-center justify-center gap-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                  Add Bang
+                </button>
+              </div>
+              <div className="text-text-light bg-accent p-4 rounded">
+                <strong>Example:</strong> Adding <code className="bg-surface px-2 py-0.5 rounded">!mkbhd</code> with username <code className="bg-surface px-2 py-0.5 rounded">@mkbhd</code> will let you search within MKBHD's channel using <code className="bg-surface px-2 py-0.5 rounded">!mkbhd tech reviews</code>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'tweets' && (
+            <div className="space-y-4">
+              <p className="text-text-light text-sm">
+                Create a bang to search tweets from a specific user. Just enter the user's handle (with or without @) and a bang key.
+              </p>
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative w-full sm:w-1/4">
+                    <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-text-light" aria-hidden="true">!</span>
+                    <input
+                      type="text"
+                      value={newBangKey}
+                      onChange={(e) => setNewBangKey(e.target.value)}
+                      placeholder="g"
+                      aria-label="Bang key"
+                      className="w-full border border-primary-light pl-6 pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          document.getElementById('twitter-username-input')?.focus()
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="relative flex-grow">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-light/50" aria-hidden="true">@</span>
+                    <input
+                      id="twitter-username-input"
+                      type="text"
+                      value={newBangUrl}
+                      onChange={(e) => {
+                        const username = e.target.value.replace(/^@/, '')
+                        setNewBangUrl(username)
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          if (newBangKey && newBangUrl) {
+                            const url = generateTwitterSearchUrl(newBangUrl)
+                            setNewBangUrl(url)
+                            handleAddBang()
+                          }
+                        }
+                      }}
+                      placeholder="RAUCHG"
+                      aria-label="Twitter username"
+                      className="w-full border border-primary-light pl-8 pr-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-light/50 uppercase"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    if (newBangKey && newBangUrl) {
+                      const url = generateTwitterSearchUrl(newBangUrl)
+                      setNewBangUrl(url)
+                      handleAddBang()
+                    }
+                  }}
+                  aria-label="Add Twitter user search bang"
+                  className="w-full bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2 flex items-center justify-center gap-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                  Add Bang
+                </button>
+              </div>
+              <div className="text-text-light bg-accent p-4 rounded">
+                <strong>Example:</strong> Adding <code className="bg-surface px-2 py-0.5 rounded">!g</code> with username <code className="bg-surface px-2 py-0.5 rounded">@rauchg</code> will let you search G's tweets using <code className="bg-surface px-2 py-0.5 rounded">!g AI</code>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'more' && (
+            <div className="text-center py-8">
+              <p className="text-text-light">More preset options coming soon!</p>
+              <p className="text-sm text-text-light mt-2">Have a suggestion? Let us know on <a href="https://x.com/dakdevs" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary-dark">X/Twitter</a>.</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -705,7 +943,7 @@ function HomeContent() {
                           <code className={`${isDefault ? "bg-primary bg-opacity-10 border-primary/20" : "bg-surface border-primary-light/20"} px-3 py-1.5 rounded-md font-mono text-sm border font-medium min-w-[3rem] text-center text-primary`}>
                             !{key}
                           </code>
-                          <span className="text-text-light/50 select-none">→</span>
+                          <span className="text-text-light/50 select-none shrink-0">→</span>
                           <span className="text-primary font-medium">
                             {new URL(`https://${url}`).hostname}
                           </span>
