@@ -20,9 +20,9 @@ export function middleware(request: NextRequest) {
   // Add cache headers for /b route
   if (request.nextUrl.pathname.startsWith('/b')) {
     response.headers.set('Cache-Control', 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800')
-    response.headers.set('CDN-Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800')
-    response.headers.set('Vercel-CDN-Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800')
-    response.headers.set('Surrogate-Control', 'public, max-age=86400, stale-while-revalidate=604800')
+    response.headers.set('CDN-Cache-Control', 'public, max-age=86400, immutable, stale-while-revalidate=604800')
+    response.headers.set('Vercel-CDN-Cache-Control', 'public, max-age=86400, immutable, stale-while-revalidate=604800')
+    response.headers.set('Surrogate-Control', 'public, max-age=86400, immutable, stale-while-revalidate=604800')
   } else {
     // Default caching strategy for other routes
     response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=3600')

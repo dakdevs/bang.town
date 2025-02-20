@@ -79,26 +79,18 @@ function HomeContent() {
   console.log('editingBang', editingBang)
 
   // Get default bang from URL params
-  const useBuiltIn = searchParams.get('_b') === 't'
   const defaultBang = searchParams.get('_d') || 'ddg'
   const isDefaultBang = (key: string, isCustomBang: boolean = false) => {
-    // If no _d is set, ddg is default
-    if (key === 'ddg' && !searchParams.get('_d')) return true
+    const defaultBang = searchParams.get('_d')
+    const isBuiltIn = searchParams.get('_b') === 't' || !defaultBang
 
-    // Get the default bang key from _d parameter
-    const defaultKey = searchParams.get('_d')
-    if (!defaultKey) return false
+    if (isBuiltIn && isCustomBang) return false
 
-    // If this isn't the key we're checking, it's not default
-    if (key !== defaultKey) return false
+    if (isBuiltIn && (defaultBang === key || !defaultBang && key === 'ddg')) return true
 
-    // If _b=t is set, only built-in bangs can be default
-    if (searchParams.get('_b') === 't') {
-      return !isCustomBang && defaultBangs.hasOwnProperty(key)
-    }
+    if (isCustomBang && defaultBang === key) return true
 
-    // For custom bangs, they must exist in searchParams
-    return isCustomBang ? searchParams.has(key) : defaultBangs.hasOwnProperty(key)
+    return false
   }
 
   // Function to get browser search settings URL
@@ -1072,14 +1064,10 @@ function HomeContent() {
                         <button
                           onClick={() => {
                             const updatedSearchParams = new URLSearchParams(searchParams.toString())
+                            updatedSearchParams.delete('_b')
                             if (key === 'ddg') {
                               updatedSearchParams.delete('_d')
-                              updatedSearchParams.delete('_b')
-                            } else if (defaultBangs[key]) {
-                              updatedSearchParams.set('_d', key)
-                              updatedSearchParams.set('_b', 't')
                             } else {
-                              updatedSearchParams.delete('_b')
                               updatedSearchParams.set('_d', key)
                             }
                             router.push(`/?${updatedSearchParams.toString()}`, { scroll: false })
@@ -1188,14 +1176,13 @@ function HomeContent() {
                   <button
                     onClick={() => {
                       const updatedSearchParams = new URLSearchParams(searchParams.toString())
+                      updatedSearchParams.delete('_b')
                       if (key === 'ddg') {
                         updatedSearchParams.delete('_d')
-                        updatedSearchParams.delete('_b')
                       } else if (defaultBangs[key]) {
                         updatedSearchParams.set('_d', key)
                         updatedSearchParams.set('_b', 't')
                       } else {
-                        updatedSearchParams.delete('_b')
                         updatedSearchParams.set('_d', key)
                       }
                       router.push(`/?${updatedSearchParams.toString()}`, { scroll: false })

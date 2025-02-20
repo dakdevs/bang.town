@@ -6,8 +6,6 @@ import "./globals.css"
 
 const bangers = Bangers({ weight: "400", subsets: ["latin"], variable: '--font-bangers' })
 
-export const runtime = 'edge'
-
 export const metadata = {
   title: "bang.town",
   description: "Your custom search engine with powerful (and shareable!) bang shortcuts",
