@@ -25,8 +25,8 @@ export default function BangRedirect() {
     // If there are no search parameters at all, stay on /b/
     if (searchParams.size === 0) return
 
-    const query = searchParams.get("q")
-    // If there are parameters but no q parameter, stay on /b/
+    const query = searchParams.get("s")
+    // If there are parameters but no s parameter, stay on /b/
     if (!query) return
 
     const [bang, ...searchTerms] = query.split(" ")
@@ -38,7 +38,7 @@ export default function BangRedirect() {
         // Get all custom bangs from the current URL
         const customBangs = new URLSearchParams()
         Array.from(searchParams.entries()).forEach(([key, value]) => {
-          if (key !== "q") {
+          if (key !== "s") {
             customBangs.set(key, value)
           }
         })
@@ -74,7 +74,7 @@ export default function BangRedirect() {
       }
     } else {
       // No bang prefix, use the default search engine
-      const defaultBang = searchParams.get('default') || 'ddg'
+      const defaultBang = searchParams.get('d') || 'ddg'
       let bangUrl = searchParams.get(defaultBang) || defaultBangs[defaultBang]
 
       if (!bangUrl) {

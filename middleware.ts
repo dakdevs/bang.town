@@ -7,6 +7,16 @@ export function middleware(request: NextRequest) {
   // Get the response
   const response = NextResponse.next()
 
+  // Handle redirect from /b/ to root for settings
+  if (request.nextUrl.pathname === '/b/' && request.nextUrl.searchParams.has('s')) {
+    const query = request.nextUrl.searchParams.get('s')
+    if (query === '!settings') {
+      const searchParams = new URLSearchParams(request.nextUrl.searchParams.toString())
+      searchParams.delete('s')
+      return NextResponse.redirect(new URL(`/?${searchParams.toString()}`, request.url))
+    }
+  }
+
   // Add cache headers for /b route
   if (request.nextUrl.pathname.startsWith('/b')) {
     response.headers.set('Cache-Control', 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800')

@@ -76,8 +76,10 @@ function HomeContent() {
   const [activeTab, setActiveTab] = useState<'custom' | 'youtube' | 'tweets' | 'vercel' | 'more'>('custom')
   const [vercelLevels, setVercelLevels] = useState<{ error: boolean, warning: boolean }>({ error: true, warning: false })
 
+  console.log('editingBang', editingBang)
+
   // Get default bang from URL params
-  const defaultBang = searchParams.get('default') || 'ddg'
+  const defaultBang = searchParams.get('d') || 'ddg'
 
   // Function to get browser search settings URL
   const getBrowserSettingsUrl = () => {
@@ -115,22 +117,28 @@ function HomeContent() {
     return 'browser'
   }
 
-  // Ref to store current values for keyboard shortcuts
-  const currentValuesRef = useRef({
-    newBangKey,
-    newBangUrl,
-    fullUrl,
-    customBangsLength: 0
-  })
-
   // Track initial URL and params on first load
   useEffect(() => {
     const currentUrl = window.location.origin
     const params = new URLSearchParams(searchParams.toString())
-    const urlParams = params.toString().replace(/&?q=[^&]*/, "")
-    const initialFullUrl = `${currentUrl}/b/?${urlParams}&q=%s`
+    const urlParams = params.toString().replace(/&?s=[^&]*/, "")
+    const initialFullUrl = `${currentUrl}/?${urlParams}&s=%s`
+    const initialLegacyUrl = `${currentUrl}/b/?${urlParams}&s=%s`
     setInitialUrl(initialFullUrl)
     setInitialParams(urlParams)
+
+    // Show legacy URL notice if using old format
+    if (pathname.startsWith('/b/')) {
+      toast.message(
+        "Legacy URL Format",
+        {
+          id: "legacy-url",
+          description: "You're using the legacy URL format. The shorter format is now recommended, but both will continue to work.",
+          duration: 5000,
+          className: "bg-surface text-text-light border border-primary-light"
+        }
+      )
+    }
   }, []) // Empty dependency array means this only runs once on mount
 
   // Update fullUrl and check for changes
@@ -138,13 +146,14 @@ function HomeContent() {
     const currentUrl = window.location.origin
     const params = new URLSearchParams(searchParams.toString())
 
-    // Remove q parameter if it exists and add placeholder
-    const urlParams = params.toString().replace(/&?q=[^&]*/, "")
-    const currentFullUrl = `${currentUrl}/b/?${urlParams}&q=%s`
-    setFullUrl(currentFullUrl)
+    // Remove s parameter if it exists and add placeholder
+    const urlParams = params.toString().replace(/&?s=[^&]*/, "")
+    const currentFullUrl = `${currentUrl}/?${urlParams}&s=%s`
+    const currentLegacyUrl = `${currentUrl}/b/?${urlParams}&s=%s`
+    setFullUrl(pathname.startsWith('/b/') ? currentLegacyUrl : currentFullUrl)
 
     // For Vercel logs URLs, transform the search query
-    const searchQuery = params.get('q')
+    const searchQuery = params.get('s')
     if (searchQuery && searchQuery.startsWith('!')) {
       const [bangKey] = searchQuery.slice(1).split(' ', 1)
       const bangUrl = params.get(bangKey)
@@ -153,7 +162,7 @@ function HomeContent() {
         if (query) {
           const transformedQuery = transformVercelSearchQuery(query)
           const updatedParams = new URLSearchParams(params.toString())
-          updatedParams.set('q', `!${bangKey} ${transformedQuery}`)
+          updatedParams.set('s', `!${bangKey} ${transformedQuery}`)
           router.replace(`/?${updatedParams.toString()}`, { scroll: false })
         }
       }
@@ -202,80 +211,23 @@ function HomeContent() {
     // Generate share URL that redirects to settings with current bangs
     const customBangs = new URLSearchParams()
     Array.from(searchParams.entries()).forEach(([key, value]) => {
-      if (key !== "q") {
+      if (key !== "s") {
         customBangs.set(key, value)
       }
     })
-    setShareUrl(`${currentUrl}/b/?${customBangs.toString()}&q=!settings`)
+    setShareUrl(`${currentUrl}${pathname.startsWith('/b/') ? '/b/' : '/'}?${customBangs.toString()}&s=!settings`)
   }, [searchParams, initialUrl])
 
   // Get custom bangs
   const customBangs = useMemo(() => {
     return Array.from(searchParams.entries())
-      .filter(([key]) => key !== "q" && key !== "default")
+      .filter(([key]) => key !== "s" && key !== "d")
       .map(([key, url]) => ({
         key,
         url,
         isNew: initialParams && !initialParams.includes(key)
       }))
   }, [searchParams, initialParams])
-
-  // Update ref when values change
-  useEffect(() => {
-    currentValuesRef.current = {
-      newBangKey,
-      newBangUrl,
-      fullUrl,
-      customBangsLength: customBangs.length
-    }
-  }, [newBangKey, newBangUrl, fullUrl, customBangs])
-
-  // Handle keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const current = currentValuesRef.current
-
-      // Ctrl/Cmd + Enter to add bang
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && current.newBangKey && current.newBangUrl) {
-        e.preventDefault()
-        handleAddBang()
-      }
-
-      // Ctrl/Cmd + C when URL input is focused to copy
-      if ((e.ctrlKey || e.metaKey) && e.key === 'c' && document.activeElement?.id === 'custom-search-url') {
-        e.preventDefault()
-        navigator.clipboard.writeText(current.fullUrl)
-        track("custom_url_copied", {
-          url: current.fullUrl,
-          num_custom_bangs: customBangs.length,
-          default_bang: defaultBang
-        })
-        toast.success(
-          "URL copied!",
-          {
-            description: "Your custom search URL has been copied to your clipboard.",
-            className: "bg-primary text-white border-primary"
-          }
-        )
-      }
-
-      // Ctrl/Cmd + F to focus search
-      if ((e.ctrlKey || e.metaKey) && e.key === 'f' && current.customBangsLength > 10) {
-        e.preventDefault()
-        document.getElementById('search-bangs-input')?.focus()
-      }
-
-      // Escape to clear search and blur input
-      if (e.key === 'Escape' && document.activeElement?.id === 'search-bangs-input') {
-        e.preventDefault()
-        setSearchQuery('')
-          ; (document.activeElement as HTMLElement).blur()
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [setSearchQuery])
 
   const handleAddBang = () => {
     if (newBangKey && newBangUrl) {
@@ -460,18 +412,9 @@ function HomeContent() {
         richColors
       />
       <div className="mb-4 sm:mb-6" role="region" aria-labelledby="custom-search-url-heading">
-        <h2 id="custom-search-url-heading" className="text-xl sm:text-2xl mb-3 sm:mb-4 text-primary">Your Custom Search URL</h2>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <input
-            id="custom-search-url"
-            type="text"
-            value={fullUrl}
-            readOnly
-            aria-label="Your custom search URL"
-            className="bg-surface p-2 rounded text-sm flex-grow h-10 font-mono focus:outline-none focus:ring-2 focus:ring-primary overflow-x-auto"
-            onClick={(e) => e.currentTarget.select()}
-          />
-          <div className="flex gap-2" role="group" aria-label="URL sharing options">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 mb-2">
+          <h2 id="custom-search-url-heading" className="text-xl sm:text-2xl text-primary m-0">Your Custom Search URL</h2>
+          <div className="flex gap-2 shrink-0" role="group" aria-label="URL sharing options">
             <button
               onClick={() => {
                 navigator.clipboard.writeText(fullUrl)
@@ -489,7 +432,7 @@ function HomeContent() {
                 )
               }}
               aria-label="Copy custom search URL to clipboard"
-              className="flex-1 sm:flex-none bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2 flex items-center justify-center gap-2"
+              className="bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-primary-dark transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2 flex items-center justify-center gap-1.5"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
@@ -500,7 +443,7 @@ function HomeContent() {
             <button
               onClick={handleShare}
               aria-label="Share settings URL"
-              className="flex-1 sm:flex-none bg-surface text-primary border border-primary px-4 py-2 rounded hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              className="bg-surface text-primary border border-primary px-3 py-1.5 rounded text-sm hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
@@ -511,9 +454,22 @@ function HomeContent() {
             </button>
           </div>
         </div>
-        <div className="mt-2 space-y-2 text-sm text-text-light">
-          <p>Pro tip: Use <code className="bg-surface px-1 py-0.5 rounded">!settings</code> to quickly return to this page with your custom bangs.</p>
-          <p>Need help setting up? Check out our <a href="/instructions" className="text-primary hover:text-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary">browser setup instructions</a>.</p>
+        <div className="relative">
+          <input
+            id="custom-search-url"
+            type="text"
+            value={fullUrl}
+            readOnly
+            aria-label="Your custom search URL"
+            className="w-full bg-surface p-2 rounded text-sm h-9 font-mono focus:outline-none focus:ring-2 focus:ring-primary overflow-x-auto border border-primary-light/20"
+            onClick={(e) => e.currentTarget.select()}
+          />
+        </div>
+        <div className="flex items-center gap-2 mt-2 text-xs text-text-light">
+          <span className="bg-accent px-1.5 py-0.5 rounded">Pro tip:</span>
+          Use <code className="bg-surface px-1 rounded">!settings</code> to return here
+          <span className="text-text-light/50">·</span>
+          <a href="/instructions" className="text-primary hover:text-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded">Setup guide</a>
         </div>
       </div>
 
@@ -604,12 +560,6 @@ function HomeContent() {
                       aria-label="Bang key"
                       className="w-full border border-primary-light pl-6 pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                       autoFocus
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
-                          document.getElementById('bang-url-input')?.focus()
-                        }
-                      }}
                     />
                   </div>
                   <div className="relative flex-grow">
@@ -623,12 +573,6 @@ function HomeContent() {
                         e.preventDefault()
                         const pastedText = e.clipboardData.getData("text")
                         setNewBangUrl(pastedText.replace(/^(https?:\/\/)/, ""))
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
-                          handleAddBang()
-                        }
                       }}
                       placeholder="www.google.com/search?q=%s"
                       aria-label="Bang URL"
@@ -667,12 +611,6 @@ function HomeContent() {
                       aria-label="Bang key"
                       className="w-full border border-primary-light pl-6 pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                       autoFocus
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
-                          document.getElementById('youtube-username-input')?.focus()
-                        }
-                      }}
                     />
                   </div>
                   <div className="relative flex-grow">
@@ -684,19 +622,6 @@ function HomeContent() {
                       onChange={(e) => {
                         const username = e.target.value.replace(/^@/, '')
                         setNewBangUrl(username)
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
-                          if (newBangKey && newBangUrl) {
-                            const url = generateYouTubeChannelSearchUrl(newBangUrl)
-                            const updatedSearchParams = new URLSearchParams(searchParams.toString())
-                            updatedSearchParams.set(newBangKey, url)
-                            router.push(`/?${updatedSearchParams.toString()}`)
-                            setNewBangKey("")
-                            setNewBangUrl("")
-                          }
-                        }
                       }}
                       placeholder="MKBHD"
                       aria-label="YouTube username"
@@ -747,12 +672,6 @@ function HomeContent() {
                       aria-label="Bang key"
                       className="w-full border border-primary-light pl-6 pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                       autoFocus
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
-                          document.getElementById('twitter-username-input')?.focus()
-                        }
-                      }}
                     />
                   </div>
                   <div className="relative flex-grow">
@@ -764,19 +683,6 @@ function HomeContent() {
                       onChange={(e) => {
                         const username = e.target.value.replace(/^@/, '')
                         setNewBangUrl(username)
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
-                          if (newBangKey && newBangUrl) {
-                            const url = generateTwitterSearchUrl(newBangUrl)
-                            const updatedSearchParams = new URLSearchParams(searchParams.toString())
-                            updatedSearchParams.set(newBangKey, url)
-                            router.push(`/?${updatedSearchParams.toString()}`)
-                            setNewBangKey("")
-                            setNewBangUrl("")
-                          }
-                        }
                       }}
                       placeholder="RAUCHG"
                       aria-label="Twitter username"
@@ -827,12 +733,6 @@ function HomeContent() {
                       aria-label="Bang key"
                       className="w-full border border-primary-light pl-6 pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                       autoFocus
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
-                          document.getElementById('vercel-team-input')?.focus()
-                        }
-                      }}
                     />
                   </div>
                   <div className="relative flex-1">
@@ -844,12 +744,6 @@ function HomeContent() {
                       placeholder="TEAM SLUG"
                       aria-label="Vercel team slug"
                       className="w-full border border-primary-light px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-text-light/50 uppercase"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
-                          document.getElementById('vercel-project-input')?.focus()
-                        }
-                      }}
                     />
                   </div>
                   <div className="relative flex-1">
@@ -991,122 +885,129 @@ function HomeContent() {
                 })
                 .map(({ key, url, isNew }) => {
                   const isDefault = key === defaultBang
-                  const isEditing = editingBang?.key === key
+                  const isEditing = editingBang?.originalKey === key
 
                   if (isEditing) {
                     return (
-                      <li key={key} className="bg-surface rounded-lg p-4 flex flex-col gap-3 border border-primary-light/10 hover:border-primary-light/30 transition-colors" role="listitem">
-                        <div className="flex flex-wrap items-center gap-3">
-                          <div className="flex items-center gap-2 w-full">
-                            <div className="relative shrink-0">
+                      <li key={key} className={`${isDefault ? "bg-primary bg-opacity-5" : "bg-surface"} rounded-lg p-4 flex flex-col gap-3 border border-primary-light/10 hover:border-primary-light/30 transition-colors`} role="listitem">
+                        <div className="flex flex-col gap-2">
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <div className="relative w-full sm:w-1/4">
                               <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-text-light" aria-hidden="true">!</span>
                               <input
                                 type="text"
                                 value={editingBang.key}
                                 onChange={(e) => setEditingBang({ ...editingBang, key: e.target.value })}
-                                placeholder="Bang key"
-                                className="bg-surface border-primary-light/20 pl-6 pr-2 py-1.5 rounded-md font-mono text-sm border font-medium w-[5rem] text-center text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                                placeholder="g"
+                                aria-label="Bang key"
+                                className="w-full border border-primary-light pl-6 pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                               />
                             </div>
-                            <span className="text-text-light/50 select-none shrink-0">→</span>
-                            <div className="flex-1">
+                            <div className="relative flex-grow">
+                              <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-text-light whitespace-nowrap" aria-hidden="true">https://</span>
                               <input
                                 type="text"
                                 value={editingBang.url}
                                 onChange={(e) => setEditingBang({ ...editingBang, url: e.target.value.replace(/^(https?:\/\/)/, "") })}
-                                placeholder="URL (e.g., www.google.com/search?q=%s)"
-                                className="w-full border border-primary-light px-3 py-1.5 rounded focus:outline-none focus:ring-2 focus:ring-primary text-text"
+                                onPaste={(e) => {
+                                  e.preventDefault()
+                                  const pastedText = e.clipboardData.getData("text")
+                                  setEditingBang({ ...editingBang, url: pastedText.replace(/^(https?:\/\/)/, "") })
+                                }}
+                                placeholder="www.google.com/search?q=%s"
+                                aria-label="Bang URL"
+                                className="w-full border border-primary-light pl-[4.5rem] pr-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                               />
                             </div>
                           </div>
-                        </div>
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => {
-                              // Validate URL contains %s
-                              if (!editingBang.url.includes("%s")) {
-                                toast.error(
-                                  "Missing search term placeholder!",
-                                  {
-                                    description: "The URL must contain %s where the search term should be inserted (e.g., example.com/search?q=%s)",
-                                    className: "bg-red-500 text-white border-red-600"
-                                  }
-                                )
-                                return
-                              }
-
-                              // Check for duplicates (excluding the current bang being edited)
-                              const isDuplicateKey = Array.from(searchParams.entries())
-                                .some(([k, v]) => k !== editingBang.originalKey && k === editingBang.key)
-
-                              const isDuplicateUrl = Array.from(searchParams.entries())
-                                .some(([k, v]) => k !== editingBang.originalKey && v === editingBang.url)
-
-                              const isBuiltInDuplicate = defaultBangs[editingBang.key] === editingBang.url
-
-                              if ((isDuplicateKey && isDuplicateUrl) || isBuiltInDuplicate) {
-                                toast.error(
-                                  `The bang !${editingBang.key} with this URL already exists!`,
-                                  {
-                                    description: isBuiltInDuplicate
-                                      ? "This exact bang is already available as a built-in bang."
-                                      : "You already have this exact custom bang.",
-                                    className: "bg-red-500 text-white border-red-600"
-                                  }
-                                )
-                                return
-                              }
-
-                              // If only the key exists (but with a different URL), show warning
-                              if (isDuplicateKey || defaultBangs[editingBang.key]) {
-                                toast.error(
-                                  `The bang !${editingBang.key} already exists!`,
-                                  {
-                                    description: defaultBangs[editingBang.key]
-                                      ? "This is a built-in bang - try a different key."
-                                      : "You already have a custom bang with this key.",
-                                    className: "bg-red-500 text-white border-red-600"
-                                  }
-                                )
-                                return
-                              }
-
-                              const updatedSearchParams = new URLSearchParams(searchParams.toString())
-                              // Remove the old bang
-                              updatedSearchParams.delete(editingBang.originalKey)
-                              // Add the new bang
-                              updatedSearchParams.set(editingBang.key, editingBang.url)
-                              router.push(`/?${updatedSearchParams.toString()}`)
-                              setEditingBang(null)
-                              toast.success(
-                                "Bang updated!",
-                                {
-                                  description: editingBang.originalKey !== editingBang.key
-                                    ? `The bang has been updated from !${editingBang.originalKey} to !${editingBang.key}`
-                                    : `The URL for !${editingBang.key} has been updated.`,
-                                  className: "bg-primary text-white border-primary"
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => {
+                                // Validate URL contains %s
+                                if (!editingBang.url.includes("%s")) {
+                                  toast.error(
+                                    "Missing search term placeholder!",
+                                    {
+                                      description: "The URL must contain %s where the search term should be inserted (e.g., example.com/search?q=%s)",
+                                      className: "bg-red-500 text-white border-red-600"
+                                    }
+                                  )
+                                  return
                                 }
-                              )
-                            }}
-                            className="text-sm px-3 py-1.5 rounded-md bg-surface text-primary border border-primary hover:bg-primary hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center gap-1.5"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                              <polyline points="17 21 17 13 7 13 7 21" />
-                              <polyline points="7 3 7 8 15 8" />
-                            </svg>
-                            Save
-                          </button>
-                          <button
-                            onClick={() => setEditingBang(null)}
-                            className="text-sm px-3 py-1.5 rounded-md bg-surface text-red-500 border border-red-500 hover:bg-red-500 hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center gap-1.5"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <line x1="18" y1="6" x2="6" y2="18" />
-                              <line x1="6" y1="6" x2="18" y2="18" />
-                            </svg>
-                            Cancel
-                          </button>
+
+                                // Check for duplicates (excluding the current bang being edited)
+                                const isDuplicateKey = Array.from(searchParams.entries())
+                                  .some(([k, v]) => k !== editingBang.originalKey && k === editingBang.key)
+
+                                const isDuplicateUrl = Array.from(searchParams.entries())
+                                  .some(([k, v]) => k !== editingBang.originalKey && v === editingBang.url)
+
+                                const isBuiltInDuplicate = defaultBangs[editingBang.key] === editingBang.url
+
+                                if ((isDuplicateKey && isDuplicateUrl) || isBuiltInDuplicate) {
+                                  toast.error(
+                                    `The bang !${editingBang.key} with this URL already exists!`,
+                                    {
+                                      description: isBuiltInDuplicate
+                                        ? "This exact bang is already available as a built-in bang."
+                                        : "You already have this exact custom bang.",
+                                      className: "bg-red-500 text-white border-red-600"
+                                    }
+                                  )
+                                  return
+                                }
+
+                                // If only the key exists (but with a different URL), show warning
+                                if (isDuplicateKey || defaultBangs[editingBang.key]) {
+                                  toast.error(
+                                    `The bang !${editingBang.key} already exists!`,
+                                    {
+                                      description: defaultBangs[editingBang.key]
+                                        ? "This is a built-in bang - try a different key."
+                                        : "You already have a custom bang with this key.",
+                                      className: "bg-red-500 text-white border-red-600"
+                                    }
+                                  )
+                                  return
+                                }
+
+                                const updatedSearchParams = new URLSearchParams(searchParams.toString())
+                                // Remove the old bang
+                                updatedSearchParams.delete(editingBang.originalKey)
+                                // Add the new bang
+                                updatedSearchParams.set(editingBang.key, editingBang.url)
+                                router.push(`/?${updatedSearchParams.toString()}`)
+                                setEditingBang(null)
+                                toast.success(
+                                  "Bang updated!",
+                                  {
+                                    description: editingBang.originalKey !== editingBang.key
+                                      ? `The bang has been updated from !${editingBang.originalKey} to !${editingBang.key}`
+                                      : `The URL for !${editingBang.key} has been updated.`,
+                                    className: "bg-primary text-white border-primary"
+                                  }
+                                )
+                              }}
+                              className="text-sm px-3 py-1.5 rounded-md bg-primary text-white hover:bg-primary-dark transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center gap-1.5"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                                <polyline points="17 21 17 13 7 13 7 21" />
+                                <polyline points="7 3 7 8 15 8" />
+                              </svg>
+                              Save Changes
+                            </button>
+                            <button
+                              onClick={() => setEditingBang(null)}
+                              className="text-sm px-3 py-1.5 rounded-md bg-surface text-primary border border-primary hover:bg-primary hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center gap-1.5"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                              </svg>
+                              Cancel
+                            </button>
+                          </div>
                         </div>
                       </li>
                     )
@@ -1115,37 +1016,26 @@ function HomeContent() {
                   return (
                     <li key={key} className={`${isDefault ? "bg-primary bg-opacity-5" : "bg-surface"} rounded-lg p-4 flex flex-col gap-3 border border-primary-light/10 hover:border-primary-light/30 transition-colors`} role="listitem">
                       <div className="flex flex-wrap items-center gap-3">
-                        <div className="flex items-center gap-2 min-w-[200px]">
-                          <code className={`${isDefault ? "bg-primary bg-opacity-10 border-primary/20" : "bg-surface border-primary-light/20"} px-3 py-1.5 rounded-md font-mono text-sm border font-medium min-w-[3rem] text-center text-primary`}>
-                            !{key}
-                          </code>
-                          <span className="text-text-light/50 select-none shrink-0">→</span>
-                          <span className="text-primary font-medium">
-                            {new URL(`https://${url}`).hostname}
-                          </span>
-                        </div>
-                        {(isNew || isDefault) && (
-                          <div className="flex gap-1.5">
-                            {isNew && (
-                              <span className="text-primary text-xs font-medium px-2 py-1 bg-primary bg-opacity-5 rounded-md border border-primary-light/20" role="status">
-                                New
-                              </span>
-                            )}
-                            {isDefault && (
-                              <span className="text-primary text-xs font-medium px-2 py-1 bg-primary bg-opacity-5 rounded-md border border-primary-light/20" role="status">
-                                Default
-                              </span>
-                            )}
+                        <div className="flex items-center gap-2 w-full">
+                          <div className="relative shrink-0">
+                            <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-text-light" aria-hidden="true">!</span>
+                            <input
+                              type="text"
+                              value={key}
+                              readOnly
+                              className="bg-surface border-primary-light/20 pl-6 pr-2 py-1.5 rounded-md font-mono text-sm border font-medium w-[5rem] text-center text-primary"
+                            />
                           </div>
-                        )}
-                        <div className="flex-1 flex items-center">
-                          <input
-                            type="text"
-                            value={`https://${url}`}
-                            readOnly
-                            className={`${isDefault ? "bg-primary bg-opacity-5" : "bg-surface"} px-3 py-1.5 rounded-md font-mono text-sm border border-primary-light/20 flex-1 overflow-x-auto focus:outline-none focus:ring-2 focus:ring-primary text-text`}
-                            onClick={(e) => e.currentTarget.select()}
-                          />
+                          <span className="text-text-light/50 select-none shrink-0">→</span>
+                          <div className="flex-1">
+                            <input
+                              type="text"
+                              value={`https://${url}`}
+                              readOnly
+                              className={`${isDefault ? "bg-primary bg-opacity-5" : "bg-surface"} px-3 py-1.5 rounded-md font-mono text-sm border border-primary-light/20 flex-1 overflow-x-auto focus:outline-none focus:ring-2 focus:ring-primary text-text`}
+                              onClick={(e) => e.currentTarget.select()}
+                            />
+                          </div>
                         </div>
                       </div>
                       <div className="flex justify-end gap-2">
@@ -1162,9 +1052,9 @@ function HomeContent() {
                           onClick={() => {
                             const updatedSearchParams = new URLSearchParams(searchParams.toString())
                             if (key === 'ddg') {
-                              updatedSearchParams.delete('default')
+                              updatedSearchParams.delete('d')
                             } else {
-                              updatedSearchParams.set('default', key)
+                              updatedSearchParams.set('d', key)
                             }
                             router.push(`/?${updatedSearchParams.toString()}`, { scroll: false })
                             toast.success(
@@ -1237,7 +1127,7 @@ function HomeContent() {
             const name = getBangName(key)
             const isDefault = key === defaultBang
             return (
-              <li key={key} className={`${isOverridden ? "opacity-75" : ""} ${isDefault ? "bg-blue-50" : "bg-white"} border ${isDefault ? "border-blue-200" : "border-gray-100"} rounded-lg p-2 flex flex-wrap items-center gap-2`} role="listitem">
+              <li key={key} className={`${isOverridden ? "opacity-75" : ""} ${isDefault ? "bg-blue-50" : "bg-white"} border ${isDefault ? "border-blue-200" : "border-gray-100"} rounded-lg p-2 flex flex-wrap items-center gap-2`} role="listitem" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-2 min-w-[200px]">
                   <code className={`${isOverridden ? "line-through" : ""} ${isDefault ? "bg-blue-100 border-blue-200 text-blue-800" : "bg-blue-50 border-blue-100 text-blue-700"} px-2 py-1 rounded-md font-mono text-sm border font-medium min-w-[3rem] text-center`}>
                     !{key}
@@ -1273,9 +1163,9 @@ function HomeContent() {
                     onClick={() => {
                       const updatedSearchParams = new URLSearchParams(searchParams.toString())
                       if (key === 'ddg') {
-                        updatedSearchParams.delete('default')
+                        updatedSearchParams.delete('d')
                       } else {
-                        updatedSearchParams.set('default', key)
+                        updatedSearchParams.set('d', key)
                       }
                       router.push(`/?${updatedSearchParams.toString()}`, { scroll: false })
                       toast.success(
