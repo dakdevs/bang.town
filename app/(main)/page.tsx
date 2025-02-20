@@ -79,7 +79,7 @@ function HomeContent() {
   console.log('editingBang', editingBang)
 
   // Get default bang from URL params
-  const defaultBang = searchParams.get('d') || 'ddg'
+  const defaultBang = searchParams.get('_d') || 'ddg'
 
   // Function to get browser search settings URL
   const getBrowserSettingsUrl = () => {
@@ -121,14 +121,14 @@ function HomeContent() {
   useEffect(() => {
     const currentUrl = window.location.origin
     const params = new URLSearchParams(searchParams.toString())
-    const urlParams = params.toString().replace(/&?s=[^&]*/, "")
-    const initialFullUrl = `${currentUrl}/?${urlParams}&s=%s`
-    const initialLegacyUrl = `${currentUrl}/b/?${urlParams}&s=%s`
+    const urlParams = params.toString().replace(/&?_q=[^&]*/, "")
+    const initialFullUrl = `${currentUrl}/b?${urlParams}${urlParams ? '&' : ''}_q=%s`
+    const initialLegacyUrl = `${currentUrl}/b?${urlParams}${urlParams ? '&' : ''}_q=%s`
     setInitialUrl(initialFullUrl)
     setInitialParams(urlParams)
 
     // Show legacy URL notice if using old format
-    if (pathname.startsWith('/b/')) {
+    if (pathname.startsWith('/b')) {
       toast.message(
         "Legacy URL Format",
         {
@@ -146,14 +146,14 @@ function HomeContent() {
     const currentUrl = window.location.origin
     const params = new URLSearchParams(searchParams.toString())
 
-    // Remove s parameter if it exists and add placeholder
-    const urlParams = params.toString().replace(/&?s=[^&]*/, "")
-    const currentFullUrl = `${currentUrl}/?${urlParams}&s=%s`
-    const currentLegacyUrl = `${currentUrl}/b/?${urlParams}&s=%s`
-    setFullUrl(pathname.startsWith('/b/') ? currentLegacyUrl : currentFullUrl)
+    // Remove q parameter if it exists and add placeholder
+    const urlParams = params.toString().replace(/&?_q=[^&]*/, "")
+    const currentFullUrl = `${currentUrl}/b?${urlParams}${urlParams ? '&' : ''}_q=%s`
+    const currentLegacyUrl = `${currentUrl}/b?${urlParams}${urlParams ? '&' : ''}_q=%s`
+    setFullUrl(pathname.startsWith('/b') ? currentLegacyUrl : currentFullUrl)
 
     // For Vercel logs URLs, transform the search query
-    const searchQuery = params.get('s')
+    const searchQuery = params.get('_q')
     if (searchQuery && searchQuery.startsWith('!')) {
       const [bangKey] = searchQuery.slice(1).split(' ', 1)
       const bangUrl = params.get(bangKey)
@@ -162,7 +162,7 @@ function HomeContent() {
         if (query) {
           const transformedQuery = transformVercelSearchQuery(query)
           const updatedParams = new URLSearchParams(params.toString())
-          updatedParams.set('s', `!${bangKey} ${transformedQuery}`)
+          updatedParams.set('_q', `!${bangKey} ${transformedQuery}`)
           router.replace(`/?${updatedParams.toString()}`, { scroll: false })
         }
       }
@@ -211,17 +211,18 @@ function HomeContent() {
     // Generate share URL that redirects to settings with current bangs
     const customBangs = new URLSearchParams()
     Array.from(searchParams.entries()).forEach(([key, value]) => {
-      if (key !== "s") {
+      if (key !== "_q") {
         customBangs.set(key, value)
       }
     })
-    setShareUrl(`${currentUrl}${pathname.startsWith('/b/') ? '/b/' : '/'}?${customBangs.toString()}&s=!settings`)
+    const customBangsStr = customBangs.toString()
+    setShareUrl(`${currentUrl}${pathname.startsWith('/b') ? '/b' : ''}/b?${customBangsStr}${customBangsStr ? '&' : ''}_q=!settings`)
   }, [searchParams, initialUrl])
 
   // Get custom bangs
   const customBangs = useMemo(() => {
     return Array.from(searchParams.entries())
-      .filter(([key]) => key !== "s" && key !== "d")
+      .filter(([key]) => !key.startsWith('_'))
       .map(([key, url]) => ({
         key,
         url,
@@ -1052,9 +1053,9 @@ function HomeContent() {
                           onClick={() => {
                             const updatedSearchParams = new URLSearchParams(searchParams.toString())
                             if (key === 'ddg') {
-                              updatedSearchParams.delete('d')
+                              updatedSearchParams.delete('_d')
                             } else {
-                              updatedSearchParams.set('d', key)
+                              updatedSearchParams.set('_d', key)
                             }
                             router.push(`/?${updatedSearchParams.toString()}`, { scroll: false })
                             toast.success(
@@ -1163,9 +1164,9 @@ function HomeContent() {
                     onClick={() => {
                       const updatedSearchParams = new URLSearchParams(searchParams.toString())
                       if (key === 'ddg') {
-                        updatedSearchParams.delete('d')
+                        updatedSearchParams.delete('_d')
                       } else {
-                        updatedSearchParams.set('d', key)
+                        updatedSearchParams.set('_d', key)
                       }
                       router.push(`/?${updatedSearchParams.toString()}`, { scroll: false })
                       toast.success(
