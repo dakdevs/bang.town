@@ -79,7 +79,27 @@ function HomeContent() {
   console.log('editingBang', editingBang)
 
   // Get default bang from URL params
+  const useBuiltIn = searchParams.get('_b') === 't'
   const defaultBang = searchParams.get('_d') || 'ddg'
+  const isDefaultBang = (key: string, isCustomBang: boolean = false) => {
+    // If no _d is set, ddg is default
+    if (key === 'ddg' && !searchParams.get('_d')) return true
+
+    // Get the default bang key from _d parameter
+    const defaultKey = searchParams.get('_d')
+    if (!defaultKey) return false
+
+    // If this isn't the key we're checking, it's not default
+    if (key !== defaultKey) return false
+
+    // If _b=t is set, only built-in bangs can be default
+    if (searchParams.get('_b') === 't') {
+      return !isCustomBang && defaultBangs.hasOwnProperty(key)
+    }
+
+    // For custom bangs, they must exist in searchParams
+    return isCustomBang ? searchParams.has(key) : defaultBangs.hasOwnProperty(key)
+  }
 
   // Function to get browser search settings URL
   const getBrowserSettingsUrl = () => {
@@ -885,7 +905,7 @@ function HomeContent() {
                   return 0
                 })
                 .map(({ key, url, isNew }) => {
-                  const isDefault = key === defaultBang
+                  const isDefault = isDefaultBang(key, true)
                   const isEditing = editingBang?.originalKey === key
 
                   if (isEditing) {
@@ -1054,7 +1074,12 @@ function HomeContent() {
                             const updatedSearchParams = new URLSearchParams(searchParams.toString())
                             if (key === 'ddg') {
                               updatedSearchParams.delete('_d')
+                              updatedSearchParams.delete('_b')
+                            } else if (defaultBangs[key]) {
+                              updatedSearchParams.set('_d', key)
+                              updatedSearchParams.set('_b', 't')
                             } else {
+                              updatedSearchParams.delete('_b')
                               updatedSearchParams.set('_d', key)
                             }
                             router.push(`/?${updatedSearchParams.toString()}`, { scroll: false })
@@ -1126,7 +1151,7 @@ function HomeContent() {
           {Object.entries(defaultBangs).map(([key, url]) => {
             const isOverridden = searchParams.has(key)
             const name = getBangName(key)
-            const isDefault = key === defaultBang
+            const isDefault = isDefaultBang(key)
             return (
               <li key={key} className={`${isOverridden ? "opacity-75" : ""} ${isDefault ? "bg-blue-50" : "bg-white"} border ${isDefault ? "border-blue-200" : "border-gray-100"} rounded-lg p-2 flex flex-wrap items-center gap-2`} role="listitem" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-2 min-w-[200px]">
@@ -1165,7 +1190,12 @@ function HomeContent() {
                       const updatedSearchParams = new URLSearchParams(searchParams.toString())
                       if (key === 'ddg') {
                         updatedSearchParams.delete('_d')
+                        updatedSearchParams.delete('_b')
+                      } else if (defaultBangs[key]) {
+                        updatedSearchParams.set('_d', key)
+                        updatedSearchParams.set('_b', 't')
                       } else {
+                        updatedSearchParams.delete('_b')
                         updatedSearchParams.set('_d', key)
                       }
                       router.push(`/?${updatedSearchParams.toString()}`, { scroll: false })

@@ -5,8 +5,6 @@ import { useSearchParams } from "next/navigation"
 import { track } from "@vercel/analytics"
 import { defaultBangs } from "../../lib/defaultBangs"
 
-// This makes the page client-side only rendered
-export const dynamic = "force-dynamic"
 export const runtime = "edge"
 
 export default function BangRedirect() {
@@ -74,8 +72,9 @@ export default function BangRedirect() {
       }
     } else {
       // No bang prefix, use the default search engine
+      const useBuiltIn = searchParams.get('_b') === 't'
       const defaultBang = searchParams.get('_d') || 'ddg'
-      let bangUrl = searchParams.get(defaultBang) || defaultBangs[defaultBang]
+      let bangUrl = useBuiltIn ? defaultBangs[defaultBang] : (searchParams.get(defaultBang) || defaultBangs[defaultBang])
 
       if (!bangUrl) {
         // Default bang not found, fallback to DuckDuckGo

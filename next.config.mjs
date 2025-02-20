@@ -13,7 +13,6 @@ const nextConfig = {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
-    runtime: 'edge',
   },
   skipTrailingSlashRedirect: true,
 }
